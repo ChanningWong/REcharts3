@@ -1,0 +1,20 @@
+Package: REcharts3
+Type: Package
+Title: A R Interface to ECharts 3.0
+Version: 1.0
+Author: Channing Wong
+Imports:
+    RJSONIO,htmltools,tools,magrittr
+Suggests:
+    dplyr
+Maintainer: Channing Wong <channingfov@gmail.com>
+Description: A R Interface to ECharts
+Collate:
+    'REcharts3.R'
+    'layer.R'
+    'optionSet.R'
+    'utils.R'
+License: MIT
+URL: https://github.com/ChanningWong/REcharts3
+BugReports: https://github.com/ChanningWong/REcharts3/issues
+RoxygenNote: 5.0.1

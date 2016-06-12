@@ -1,0 +1,180 @@
+
+
+.rev = function(x) x[length(x):1]
+
+.plotColor = c('#c23531','#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83',  '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3')
+
+.guessLabelLength = function(){}
+
+.selectElement = function(x, path){
+  if(is.integer(path) | is.numeric(path)){
+    f = function(x, i) if(i <= length(x)) `[[`(x, i)
+  } else if(is.character(path)){
+    f = function(x, i) if(i %in% names(x)) `[[`(x, i)
+  } else f = function(x, i) NULL
+  Reduce(f, c(list(x), as.list(path)))
+}
+
+
+`.selectElement<-` = function(x, path, value){
+  e = .selectElement(x, path)
+  if(!is.null(e)){
+    s = if(is.character(path)) '\'' else ''
+    expr = paste0('x', paste0('[[', s, path, s, ']]', collapse = ''), ' = value')
+    eval(parse(text = expr))
+    x
+  } else stop('path is not valided')
+}
+
+
+
+
+# NA?
+.pickLevels = function(x, droplevels = T){
+  if('factor' %in% class(x)){
+    if(droplevels) out = levels(droplevels(x)) else out = levels(x)
+  } else {
+    out = unique(x)
+  } 
+  out
+}
+
+
+
+
+.dataParse = function(dat, x, y, z = NULL, label = NULL, facets = NULL, ...){
+  
+  parList = as.list(match.call()[-1])
+  if(is.character(parList$x)) parList$x = as.name(parList$x)
+  if(is.character(parList$y)) parList$y = as.name(parList$y)
+  if(is.character(parList$z)) parList$z = as.name(parList$z)
+  if(is.character(parList$label)) parList$label = as.name(parList$label)
+  if(is.character(parList$facets)) parList$label = as.name(parList$facets)
+  
+  d = data.frame(x = eval(parList$x, dat), 
+                 y = eval(parList$y, dat), 
+                 stringsAsFactors = F)
+  if(!is.null(parList$z)){
+    if(is.character(parList$z)) parList$z = as.name(parList$z)
+    d$z = eval(parList$z, dat)
+  }
+  if(!is.null(parList$label)){
+    if(is.character(parList$label)) parList$label = as.name(parList$label)
+    d$label = eval(parList$label, dat)
+  }
+  if(!is.null(parList$facets)){
+    if(is.character(parList$facets)) parList$facets = as.name(parList$facets)
+    d$facets = eval(parList$facets, dat)
+  }
+  
+  if(is.null(d$label)) d$label = d$y
+  d
+}
+
+
+
+
+addSecAxis = function(p, series, type, yAxis.max = NULL){
+  zt.series = sapply(p@option$series, `[[`, 'name')
+  zt.i = which(zt.series == series)
+  p@option$series[[zt.i]]$type = type
+  p@option$series[[zt.i]]$yAxisIndex = p@option$series[[zt.i]]$yAxisIndex + 1
+  p@option$yAxis[[2]] = p@option$yAxis[[1]]
+  if(!is.null(yAxis.max)) p@option$yAxis[[2]]$max = yAxis.max
+  p
+}
+
+`+.REcharts3` = function(p, fun, ...){
+  fun(p, ...)
+}
+
+
+
+.makeDom = function(p, id = NULL, width = NULL, height = NULL){
+  if(is.null(id)) id = p@id
+  json = RJSONIO::toJSON(p@option)
+  
+  option = gsub('"formatFunction_label"', p@formatFunction_label, json)
+  option = gsub('"formatFunction_tooltip"', p@formatFunction_tooltip, option)
+  
+  var = paste0('echart_', id)
+  size = if(!is.null(height)) paste0('height:', height, 'px;') else paste0('height:100%;')
+  size = if(!is.null(width)) paste0(size, 'width:', width, 'px;') else paste0(size, 'width:100%;')
+  
+  paste0('<div class="container-fluid">
+         <div id="', id, '" style="', size, ';border:1px solid #ccc;padding:10px;"></div>
+         <script src="echarts.min.js"></script>
+         <script type="text/javascript">var ', var, ' = echarts.init(document.getElementById(\'', id, '\'));
+         ', var, '.setOption(', option, ');
+          window.onresize = function () { ', var, '.resize(); }
+         </script>'
+  )
+}
+# <script src="http://echarts.baidu.com/dist/echarts.min.js"></script>
+
+
+
+.makeHtml = function(dom){
+  html = sprintf(
+    '<!DOCTYPE html>
+      <head>
+        <meta charset="utf-8">
+        <title>ECharts</title>
+      </head>
+    <body>%s</body>', dom)
+  if(.Platform$OS.type == 'windows') html = iconv(html, 'gbk', 'utf8')
+  html
+}
+
+
+
+
+# wd = getwd()
+# setwd('E:/R/Function/REcharts3')  
+# setwd(wd)
+plot.REcharts3 = function(p, width = NULL, height = NULL, 
+                          id = NULL, viewer = F, encoding = 'GBK'){
+  
+  plotDir = tempdir()
+  if (!file.exists(plotDir)) dir.create(plotDir, recursive = TRUE)
+  fileDir = paste0(plotDir, '/tmp.html')
+  url = sprintf("http://localhost:%s/session/%s", tools:::httpdPort(), basename(fileDir))
+  
+  html = .makeDom(p, id = id, width = width, height = height)
+  con = file(fileDir, 'w', encoding = encoding)
+  writeLines(html, con, useBytes = F)
+  close(con)
+  
+  file.copy(system.file('js/echarts.min.js', package = 'REcharts3'), 
+            plotDir, recursive = TRUE)
+  
+  if(!is.null(getOption('viewer')) & viewer) rstudio::viewer(url) else browseURL(url)
+
+}
+
+
+print.REcharts3 = plot.REcharts3
+
+
+
+shinyOuput.REcharts3 = function(p, width = NULL, height = NULL, id = NULL){
+  
+  if(is.null(id)) id = p@id
+  json = RJSONIO::toJSON(p@option)
+  option = gsub('"formatFunction_label"', p@formatFunction_label, json)
+  option = gsub('"formatFunction_tooltip"', p@formatFunction_tooltip, option)
+  
+  var = paste0('echart_', id)
+  dom = sprintf('
+                <div class="container-fluid">
+                <div id="%s" style="height:%spx;width:%spx;border:0px;padding:10px;"></div>
+                <script type="text/javascript">var %s = echarts.init(document.getElementById(\'%s\'));
+                %s.setOption(%s);</script>
+                </div>', id, height, width, var, id, var, option) # border:1px solid #ccc
+  htmltools::HTML(dom)
+}
+
+
+
+
+
