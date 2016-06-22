@@ -119,22 +119,24 @@
 
 
 .setSeries = function(dat, xLevels, 
-                      type = 'bar', stack = F, name = 'name', color = NULL, 
+                      type = 'bar', stack = F, name = 'name', color = .plotColor, 
                       label.show = T, label.position = 'top'){
   
   if(is.null(dat$z)){
     series = list(.setSeriesData(dat, xLevels,
                                  type = type, 
                                  name = name, 
+                                 stack = stack,
                                  label.show = label.show, 
                                  label.position = label.position,
-                                 color = .plotColor[1]))
+                                 color = color[1]))
   } else {
     ff = split(dat, dat$z)
     series = mapply(.setSeriesData, 
                     ff, list(xLevels),
                     type = type, 
-                    name = name, 
+                    name = name,
+                    stack = stack,
                     label.show = label.show, 
                     label.position = label.position, 
                     color = as.list(color[seq_along(ff)]),
