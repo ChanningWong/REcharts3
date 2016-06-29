@@ -136,6 +136,7 @@
                     ff2, list(xLevels),
                     type = type, 
                     name = name, 
+                    stack = stack,
                     label.show = label.show, 
                     label.position = label.position, 
                     color = as.list(color[seq_along(ff2)]),
