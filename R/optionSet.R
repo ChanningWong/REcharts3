@@ -58,10 +58,13 @@
   # ncol = ceiling(sqrt(n));grid.left = 7; grid.top = 8; grid.right = 5; grid.bottom = 6; grid.margin.x = 8; grid.margin.y = 9
   if(is.null(ncol)) ncol = ceiling(sqrt(n))
   if(is.null(nrow)) nrow = ceiling(n / ncol)
-  if(is.null(grid.margin.x)) grid.margin.x = 5
-  if(is.null(grid.margin.y)) grid.margin.y = 7
+  if(is.null(grid.left)) grid.left = 5
+  if(is.null(grid.top)) grid.top = 5
+  if(is.null(grid.right)) grid.right = 5
+  if(is.null(grid.bottom)) grid.bottom = 5
   margin.x = ifelse(ncol == 1, grid.margin.x, grid.margin.x / (ncol - 1))
   margin.y = ifelse(nrow == 1, grid.margin.y, grid.margin.y / (nrow - 1))
+  print(list(grid.left, grid.top, grid.right, grid.bottom))
   
   width = (100 - grid.left - grid.right - margin.x*(ncol - 1)) / ncol
   height = (100 - grid.top - grid.bottom - margin.y* (nrow - 1)) / nrow

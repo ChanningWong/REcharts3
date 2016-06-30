@@ -3,14 +3,15 @@
 setLayer = function(dat, x, y, z = NULL, label = NULL, legend = NULL,
                     facets = NULL, ncol = NULL, nrow = NULL, facets.fontSize = 14, facets.top = 6,
                     type = 'bar', stack = F, color = .plotColor,
-                    title = NULL, title.fontSize = 18, title.top = 0, title.left = 'center',
+                    title = NULL, title.fontSize = 18, title.top = 0, title.left = 'left',
                     label.show = F, label.position = 'inside', 
                     tooltip.show = T, 
-                    grid.left = 5, grid.top = NULL, grid.right = 5, grid.bottom = 5, grid.margin.x = NULL, grid.margin.y = NULL, 
+                    grid.left = NULL, grid.top = NULL, grid.right = NULL, grid.bottom = NULL, grid.margin.x = 5, grid.margin.y = 5, 
                     legend.show = T, legend.left = 'center', legend.top = '6%', legend.orient = c('horizontal', 'vertical'),
                     legend.right = NULL, legend.bottom = NULL, legend.width = NULL, legend.height = NULL,
                     yAxis.max = 'auto',
                     xAxis.inverse = F, axisLabel.interval.x = NULL, axisLabel.interval.y = NULL,
+                    width = NULL, height = NULL,
                     ...){
   
   
@@ -79,7 +80,9 @@ setLayer = function(dat, x, y, z = NULL, label = NULL, legend = NULL,
   
   
   # gridSet
-  if(!is.null(d$facets)){ 
+  if(is.null(d$facets) & is.null(grid.left) & is.null(grid.top) & is.null(grid.right) & is.null(grid.bottom)){
+    gridSet = NULL
+  } else if(!is.null(d$facets)){ 
     gridSet = .gridSet_facets(length(facetsName), ncol = ncol, nrow = nrow, 
                               grid.left = grid.left, grid.top = grid.top, 
                               grid.right = grid.right, grid.bottom = grid.bottom,
@@ -127,6 +130,8 @@ setLayer = function(dat, x, y, z = NULL, label = NULL, legend = NULL,
   p@id = paste('ID', format(Sys.time(), "%Y%m%d%H%M%S"), substring(runif(1), 3, 5), sep = '_')
   p@id = gsub('\\..*', '', p@id)
   p@option = optionList
+  p@width = ifelse(!is.null(width), width, 0) 
+  p@height = ifelse(!is.null(height), height, 0) 
   p@formatFunction_label = 'function(params){return params.data.label}'
   p@formatFunction_tooltip = 'function(params){return params.name + \':<br>\' + params.seriesName + \':\' + params.data.label}'
   p
@@ -154,6 +159,8 @@ his = function(...){
 bar = function(dat, x, y, z = NULL, label = NULL, facets = NULL, stack = F,
                title = NULL, barGap = 10, axisLabel.interval.y = 0,
                label.position = 'inside', 
+               legend.show = T, legend.left = 'center', legend.top = '6%', legend.orient = c('horizontal', 'vertical'),
+               legend.right = NULL, legend.bottom = NULL, legend.width = NULL, legend.height = NULL,
                tooltip.show = T, ...){
   expr = match.call()
   parList = as.list(expr[-1])
@@ -191,10 +198,15 @@ line = function(dat, x, y, z = NULL, label = NULL, facets = NULL, stack = F,
 
 
 setLayer.pie = function(dat, x, y, label = NULL, facets = NULL, 
-                        type = 'pie', title = NULL,
+                        type = 'pie', 
+                        title = NULL, title.fontSize = 18, title.top = 0, title.left = 'left',
                         label.position = 'outside', 
                         chart.radius = '50%', chart.position = c('50%', '60%'),
-                        tooltip.show = T, ...){
+                        tooltip.show = T, 
+                        legend.show = T, legend.left = 'center', legend.top = '7%', legend.orient = c('horizontal', 'vertical'),
+                        legend.right = NULL, legend.bottom = NULL, legend.width = NULL, legend.height = NULL,
+                        width = NULL, height = NULL,
+                        ...){
   
   expr = match.call()
   expr[[1]] = as.name('.dataParse')
@@ -210,18 +222,24 @@ setLayer.pie = function(dat, x, y, label = NULL, facets = NULL,
                                    chart.radius = chart.radius, chart.position = chart.position))
   
   optionList = list(
-    title = list(text = title, x = 'center'),
     tooltip = list(show = tooltip.show, 
                    formatter = '{a} <br/>{b} : {c} ({d}%)'),
-    legend = list(orient = 'vertical',
-                  left = 'left',
-                  data = xLevels),
     series = series
   )
+  optionList$title = list(list(text = title, fontSize = title.fontSize, 
+                               top = title.top, left = title.left))
+  optionList$legend = .legendSet(data = xLevels,
+                                 legend.show = legend.show,
+                                 legend.left = legend.left, legend.top = legend.top,
+                                 legend.right = legend.right, legend.bottom = legend.bottom,
+                                 legend.width = legend.width, legend.height = legend.height,
+                                 legend.orient = legend.orient[1])
   
   p = new("REcharts3")
   p@id = paste('ID', format(Sys.time(), "%Y%m%d%H%M%S"), substring(runif(1), 3, 5), sep = '_')
   p@id = gsub('\\..*', '', p@id)
+  p@width = ifelse(!is.null(width), width, 0) 
+  p@height = ifelse(!is.null(height), height, 0) 
   p@option = optionList
   p@formatFunction_label = 'function(params){return params.data.label}'
   p@formatFunction_tooltip = '' # function(params){return params.name + \':<br>\' + params.seriesName + \':\' + params.data.label}'

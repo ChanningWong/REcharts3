@@ -92,6 +92,8 @@ addSecAxis = function(p, series, type, yAxis.max = NULL){
 
 .makeDom = function(p, id = NULL, width = NULL, height = NULL){
   if(is.null(id)) id = p@id
+  if(is.null(width) & p@width > 0) width = p@width
+  if(is.null(height) & p@height > 0) height = p@height
   json = RJSONIO::toJSON(p@option)
   
   option = gsub('"formatFunction_label"', p@formatFunction_label, json)
@@ -157,7 +159,7 @@ print.REcharts3 = plot.REcharts3
 
 
 
-shinyOuput.REcharts3 = function(p, width = NULL, height = NULL, id = NULL){
+shinyOuput.REcharts3 = function(p, width = 800, height = 400, id = NULL){
   
   if(is.null(id)) id = p@id
   json = RJSONIO::toJSON(p@option)
@@ -175,6 +177,45 @@ shinyOuput.REcharts3 = function(p, width = NULL, height = NULL, id = NULL){
 }
 
 
-
-
-
+renderREcharts3 <- function(expr, env = parent.frame(), quoted = FALSE) 
+{
+  
+  func <- shiny::exprToFunction(expr, env, quoted)
+  function(){
+    p <- func()
+    
+    id = p@id
+    width = ifelse(p@width > 0, p@width, 600) 
+    height = ifelse(p@height > 0, p@height, 350)
+    
+    json = RJSONIO::toJSON(p@option)
+    
+    option = gsub('"formatFunction_label"', p@formatFunction_label, json)
+    option = gsub('"formatFunction_tooltip"', p@formatFunction_tooltip, option)
+    
+    var = paste0('echart_', id)
+    size = if(!is.null(height)) paste0('height:', height, 'px;') else paste0('height:100%;')
+    size = if(!is.null(width)) paste0(size, 'width:', width, 'px;') else paste0(size, 'width:100%;')
+    
+#     paste0('<div class="container-fluid">
+#          <div id="', id, '" style="', size, ';border:1px solid #ccc;padding:10px;"></div>
+#          <script src="echarts.min.js"></script>
+#          <script type="text/javascript">var ', var, ' = echarts.init(document.getElementById(\'', id, '\'));
+#          ', var, '.setOption(', option, ');
+#           window.onresize = function () { ', var, '.resize(); }
+#          </script>'
+#     )
+    
+    
+    
+    var = paste0('echart_', id)
+    dom = sprintf('
+                <div class="container-fluid">
+                <div id="%s" style="height:%spx;width:%spx;border:0px;padding:10px;"></div>
+                <script type="text/javascript">var %s = echarts.init(document.getElementById(\'%s\'));
+                %s.setOption(%s);</script>
+                </div>', id, height, width, var, id, var, option) # border:1px solid #ccc
+    # htmltools::HTML(dom)
+    htmltools::HTML(dom)
+  }
+}
