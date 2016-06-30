@@ -29,11 +29,11 @@ his(esoph, agegp, ncontrols, alcgp, facets = tobgp, title = 'Data Set Esoph')
 
 ```
 
-![Bar Plot 1](screenshots/barplot1.PNG)
+![Bar Plot 1](screenshots/barplot1.png)
 
-![Bar Plot 2](screenshots/barplot2.PNG)
+![Bar Plot 2](screenshots/barplot2.png)
 
-![Bar Plot 3](screenshots/barplot3.PNG)
+![Bar Plot 3](screenshots/barplot3.png)
 
 
 ### Line Plot
@@ -42,7 +42,7 @@ his(esoph, agegp, ncontrols, alcgp, facets = tobgp, title = 'Data Set Esoph')
 line(airquality[1:20, ], paste0(Month, '-', Day), Temp, title = 'airquality')
 ```
 
-![Line Plot 1](screenshots/lineplot1.PNG)
+![Line Plot 1](screenshots/lineplot1.png)
 
 
 
@@ -54,8 +54,8 @@ pie(dat1, feed, weight, label = round(weight*10, 0), title = 'title')
 donut(dat1, feed, weight, title = 'title')
 ```
 
-![Pie Plot 1](screenshots/pieplot1.PNG)
-![Pie Plot 2](screenshots/pieplot2.PNG)
+![Pie Plot 1](screenshots/pieplot1.png)
+![Pie Plot 2](screenshots/pieplot2.png)
 
 
 
@@ -75,7 +75,7 @@ p2 = p %>% addSecAxis(series = 'CumulativeProportion', type = 'line', yAxis.max 
 p2
 ```
 
-![Pie Plot 1](screenshots/mixedplot1.PNG)
+![Pie Plot 1](screenshots/mixedplot1.png)
 
 
 
@@ -124,7 +124,7 @@ shinyApp(
 
 ```
 
-![shiny 1](screenshots/shiny1.PNG)
+![shiny 1](screenshots/shiny1.png)
 
 
 
