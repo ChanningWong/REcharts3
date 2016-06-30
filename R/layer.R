@@ -1,7 +1,8 @@
 
 
-setLayer = function(dat, x, y, z = NULL, label = NULL, legend = NULL,
-                    facets = NULL, ncol = NULL, nrow = NULL, facets.fontSize = 14, facets.top = 6,
+setLayer = function(dat, x, y, z = NULL, facets = NULL, 
+                    label = NULL, legend = NULL,
+                    ncol = NULL, nrow = NULL, facets.fontSize = 14, facets.top = 6,
                     type = 'bar', stack = F, color = .plotColor,
                     title = NULL, title.fontSize = 18, title.top = 0, title.left = 'left',
                     label.show = F, label.position = 'inside', 
@@ -156,7 +157,7 @@ his = function(...){
 
 
 
-bar = function(dat, x, y, z = NULL, label = NULL, facets = NULL, stack = F,
+bar = function(dat, x, y, z = NULL, facets = NULL, label = NULL, stack = F,
                title = NULL, barGap = 10, axisLabel.interval.y = 0,
                label.position = 'inside', 
                legend.show = T, legend.left = 'center', legend.top = '6%', legend.orient = c('horizontal', 'vertical'),
@@ -179,7 +180,7 @@ bar = function(dat, x, y, z = NULL, label = NULL, facets = NULL, stack = F,
 
 
 
-line = function(dat, x, y, z = NULL, label = NULL, facets = NULL, stack = F,
+line = function(dat, x, y, z = NULL, facets = NULL, label = NULL, stack = F,
                 title = NULL,
                 label.position = 'top', 
                 tooltip.show = T, ...){
@@ -197,7 +198,7 @@ line = function(dat, x, y, z = NULL, label = NULL, facets = NULL, stack = F,
 
 
 
-setLayer.pie = function(dat, x, y, label = NULL, facets = NULL, 
+setLayer.pie = function(dat, x, y, facets = NULL, label = NULL, 
                         type = 'pie', 
                         title = NULL, title.fontSize = 18, title.top = 0, title.left = 'left',
                         label.position = 'outside', 
@@ -250,7 +251,7 @@ setLayer.pie = function(dat, x, y, label = NULL, facets = NULL,
 
 
 
-pie = function(dat, x, y, label = NULL, facets = NULL, stack = F,
+pie = function(dat, x, y, facets = NULL, label = NULL, stack = F,
                title = NULL,
                label.position = 'outside', 
                chart.radius = '70%', chart.position = c('50%', '55%'),
@@ -265,7 +266,7 @@ pie = function(dat, x, y, label = NULL, facets = NULL, stack = F,
 } 
 
 
-donut = function(dat, x, y, label = NULL, facets = NULL, stack = F,
+donut = function(dat, x, y, facets = NULL, label = NULL, stack = F,
                  title = NULL,
                  label.position = 'outside', 
                  chart.radius = c('40%', '60%'), chart.position = c('50%', '55%'),

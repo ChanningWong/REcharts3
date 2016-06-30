@@ -64,7 +64,6 @@
   if(is.null(grid.bottom)) grid.bottom = 5
   margin.x = ifelse(ncol == 1, grid.margin.x, grid.margin.x / (ncol - 1))
   margin.y = ifelse(nrow == 1, grid.margin.y, grid.margin.y / (nrow - 1))
-  print(list(grid.left, grid.top, grid.right, grid.bottom))
   
   width = (100 - grid.left - grid.right - margin.x*(ncol - 1)) / ncol
   height = (100 - grid.top - grid.bottom - margin.y* (nrow - 1)) / nrow

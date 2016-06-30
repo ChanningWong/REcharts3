@@ -1,4 +1,17 @@
 
+.round2 <- function(x, n = 1, numeric = T) {
+  posneg <- sign(x)
+  z <- abs(x)*10^n
+  z <- z + 0.5
+  z <- trunc(z)
+  z <- z/10^n
+  if(numeric) z*posneg else format(z*posneg,  nsmall = n)
+}
+
+percent <- function(x, n = 1){
+  m <- paste('%.', n, 'f', sep = '')
+  paste(sprintf(m, .round2(100 * x, n, numeric = T)), '%', sep='')
+}
 
 .rev = function(x) x[length(x):1]
 
