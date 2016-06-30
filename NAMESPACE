@@ -3,7 +3,7 @@
 export(setLayer)
 export(.dataParse)
 export(bar)
-export(his
+export(his)
 export(line)
 export(pie)
 export(donut)
