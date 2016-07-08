@@ -108,12 +108,15 @@
     itemStyle = list(normal = list(color = color))
   }
   
+  datList = toList(dat)[match(xLevels, .pickLevels(dat$x))]
+  datList[sapply(datList, is.null)] = NA
+  
   list(name = name,
        type = type,
        xAxisIndex = xAxisIndex,
        yAxisIndex = yAxisIndex,
        stack = stack,
-       data = toList(dat)[match(xLevels, .pickLevels(dat$x))],
+       data = datList,
        label = list(normal = normalList, emphasis = normalList),
        itemStyle = itemStyle 
   )
