@@ -121,7 +121,7 @@
 
 
 .setSeries = function(dat, xLevels, 
-                      type = 'bar', stack = F, name = 'name', color = NULL, 
+                      type = 'bar', stack = F, name = 'name', color = .plotColor[1], 
                       label.show = T, label.position = 'top'){
   
   if(is.null(dat$z)){
@@ -149,7 +149,7 @@
 }
 
 
-.setSeriesData.pie = function(dat, type = 'pie', name = 'name', 
+.setSeriesData.pie = function(dat, type = 'pie', name = 'name', color = .plotColor[1], 
                               label.show = T, 
                               chart.radius = '50%', chart.position = c('50%', '60%'),
                               label.position = c('outside', 'inside', 'center')){
@@ -183,6 +183,131 @@
 
 
 
+.setSeriesData.scatter = function(dat, type = 'scatter', name = 'name', color = .plotColor, 
+                              label.show = T, 
+                              label.position = c('outside', 'inside', 'center')){
+  
+  toList_scatter = function(d)(
+    mapply(function(x, y, v){
+      list(value = c(x, y), label = v)
+    } , 
+    d$x, d$y, d$label,
+    SIMPLIFY = F, USE.NAMES = F)
+  )
+  
+  if(label.show){
+    normalList = list(show = T,
+                      position = label.position[1],
+                      formatter = 'formatFunction_label')
+  } else {
+    normalList = list(show = F)
+  }
+  
+  if(!is.null(color)){
+    itemStyle = list(normal = list(color = color))
+  }
+  
+  list(name = name,
+       type = type,
+       data = toList_scatter(dat),
+       label = list(normal = normalList, emphasis = normalList),
+       itemStyle = itemStyle 
+  )
+}
+
+
+
+.setSeries.scatter = function(dat,  
+                              type = 'scatter', name = 'name', color = .plotColor, 
+                              label.show = T, label.position = 'top'){
+  
+  if(is.null(dat$z)){
+    series = list(.setSeriesData.scatter(dat, 
+                                 type = type, 
+                                 name = name, 
+                                 label.show = label.show, 
+                                 label.position = label.position[1],
+                                 color = .plotColor[1]))
+  } else {
+    ff = split(dat, dat$z)
+    ff2 = ff[match(name, names(ff))] # name = names(ff)
+    series = mapply(.setSeriesData.scatter, 
+                    ff2, 
+                    type = type, 
+                    name = name, 
+                    label.show = label.show, 
+                    label.position = label.position[1], 
+                    color = as.list(color[seq_along(ff2)]),
+                    SIMPLIFY = F, USE.NAMES = F)
+  }
+  names(series) = NULL
+  series
+}
+
+
+
+
+.setSeriesData.mapLine = function(dat, type = 'lines', name = 'name', color = .plotColor, 
+                                     label.show = T, 
+                                     label.position = c('outside', 'inside', 'center')){
+  
+  toList_mapScatter = function(d)(
+    mapply(function(x, y){
+      c(x, y)
+    }, 
+    d$x, d$y, 
+    SIMPLIFY = F, USE.NAMES = F)
+  )
+  
+  if(label.show){
+    normalList = list(show = T,
+                      position = label.position[1],
+                      formatter = 'formatFunction_label')
+  } else {
+    normalList = list(show = F)
+  }
+  
+  list(name = name,
+       type = type,
+       coordinateSystem = 'bmap',
+       data = list(list(coords = toList_mapScatter(dat))),
+       label = list(normal = normalList, emphasis = normalList),
+       polyline = T,
+       lineStyle = list(
+         normal = list(color = color,
+                       opacity = 0.6,
+                       width = 1)
+       )
+       
+  )
+}
+
+.setSeries.mapLine = function(dat,  
+                              type = 'lines', name = 'name', color = .plotColor, 
+                              label.show = T, label.position = 'top'){
+  
+  if(is.null(dat$z)){
+    series = list(.setSeriesData.mapLine(dat, 
+                                         type = type, 
+                                         name = name, 
+                                         label.show = label.show, 
+                                         label.position = label.position[1],
+                                         color = .plotColor[1]))
+  } else {
+    ff = split(dat, dat$z)
+    ff2 = ff[match(name, names(ff))] # name = names(ff)
+    series = mapply(.setSeriesData.mapLine, 
+                    ff2, 
+                    type = type, 
+                    name = name, 
+                    label.show = label.show, 
+                    label.position = label.position[1], 
+                    color = as.list(color[seq_along(ff2)]),
+                    SIMPLIFY = F, USE.NAMES = F)
+  }
+  names(series) = NULL
+  series
+}
 
 
 coord_rotate = function(p){

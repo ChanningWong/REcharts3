@@ -8,10 +8,24 @@
   if(numeric) z*posneg else format(z*posneg,  nsmall = n)
 }
 
+
 percent <- function(x, n = 1){
   m <- paste('%.', n, 'f', sep = '')
   paste(sprintf(m, .round2(100 * x, n, numeric = T)), '%', sep='')
 }
+
+
+
+rmNULL <- function(x) {
+  is.nullElement <- function(x) is.null(x) | all(sapply(x, is.null))
+  x = Filter(Negate(is.nullElement), x)
+  lapply(x, function(x) if (is.list(x)) rmNULL(x) else x)
+}
+
+
+
+
+
 
 .rev = function(x) x[length(x):1]
 
@@ -55,7 +69,7 @@ percent <- function(x, n = 1){
 
 
 
-.dataParse = function(dat, x, y, z = NULL, label = NULL, facets = NULL, ...){
+.dataParse = function(dat, x, y, z = NULL, facets = NULL, label = NULL, type = 'bar', ...){
   
   parList = as.list(match.call()[-1])
   if(is.character(parList$x)) parList$x = as.name(parList$x)
@@ -80,7 +94,11 @@ percent <- function(x, n = 1){
     d$facets = eval(parList$facets, dat)
   }
   
-  if(is.null(d$label)) d$label = d$y
+  if(type == 'scatter'){
+    if(is.null(d$label)) d$label = paste0(d$x, d$y)
+  } else {
+    if(is.null(d$label)) d$label = d$y
+  }
   d
 }
 
@@ -107,7 +125,7 @@ addSecAxis = function(p, series, type, yAxis.max = NULL){
   if(is.null(id)) id = p@id
   if(is.null(width) & p@width > 0) width = p@width
   if(is.null(height) & p@height > 0) height = p@height
-  json = RJSONIO::toJSON(p@option)
+  json = RJSONIO::toJSON(p@option, pretty = T)
   
   option = gsub('"formatFunction_label"', p@formatFunction_label, json)
   option = gsub('"formatFunction_tooltip"', p@formatFunction_tooltip, option)
@@ -118,7 +136,9 @@ addSecAxis = function(p, series, type, yAxis.max = NULL){
   
   paste0('<div class="container-fluid">
          <div id="', id, '" style="', size, ';border:1px solid #ccc;padding:10px;"></div>
-         <script src="echarts.min.js"></script>
+         <script type="text/javascript" src="echarts.min.js"></script>
+         <script type="text/javascript" src="bmap.min.js"></script>
+         <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM"></script>
          <script type="text/javascript">var ', var, ' = echarts.init(document.getElementById(\'', id, '\'));
          ', var, '.setOption(', option, ');
           window.onresize = function () { ', var, '.resize(); }
@@ -148,7 +168,7 @@ addSecAxis = function(p, series, type, yAxis.max = NULL){
 # setwd('E:/R/Function/REcharts3')  
 # setwd(wd)
 plot.REcharts3 = function(p, width = NULL, height = NULL, 
-                          id = NULL, viewer = F, encoding = 'GBK'){
+                          id = NULL, viewer = F, encoding = 'GBK', type = 'map'){
   
   plotDir = tempdir()
   if (!file.exists(plotDir)) dir.create(plotDir, recursive = TRUE)
@@ -160,8 +180,8 @@ plot.REcharts3 = function(p, width = NULL, height = NULL,
   writeLines(html, con, useBytes = F)
   close(con)
   
-  file.copy(system.file('js/echarts.min.js', package = 'REcharts3'), 
-            plotDir, recursive = TRUE)
+  file.copy(system.file('js/echarts.min.js', package = 'REcharts3'), plotDir, recursive = TRUE)
+  if(type == 'map') file.copy(system.file('js/bmap.min.js', package = 'REcharts3'), plotDir, recursive = TRUE)
   
   if(!is.null(getOption('viewer')) & viewer) rstudio::viewer(url) else browseURL(url)
 
@@ -175,7 +195,7 @@ print.REcharts3 = plot.REcharts3
 shinyOuput.REcharts3 = function(p, width = 800, height = 400, id = NULL){
   
   if(is.null(id)) id = p@id
-  json = RJSONIO::toJSON(p@option)
+  json = RJSONIO::toJSON(p@option, pretty = T)
   option = gsub('"formatFunction_label"', p@formatFunction_label, json)
   option = gsub('"formatFunction_tooltip"', p@formatFunction_tooltip, option)
   
@@ -201,7 +221,7 @@ renderREcharts3 <- function(expr, env = parent.frame(), quoted = FALSE)
     width = ifelse(p@width > 0, p@width, 600) 
     height = ifelse(p@height > 0, p@height, 350)
     
-    json = RJSONIO::toJSON(p@option)
+    json = RJSONIO::toJSON(p@option, pretty = T)
     
     option = gsub('"formatFunction_label"', p@formatFunction_label, json)
     option = gsub('"formatFunction_tooltip"', p@formatFunction_tooltip, option)
