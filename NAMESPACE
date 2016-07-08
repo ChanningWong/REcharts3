@@ -8,6 +8,10 @@ export(his)
 export(line)
 export(pie)
 export(donut)
+export(mapLine)
+export(markPoint)
+export(markScatter)
+
 
 export(percent)
 export(addSecAxis)
