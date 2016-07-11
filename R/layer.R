@@ -281,3 +281,32 @@ markScatter = function(p, dat, x, y, z, color = .plotColor[1]){
   )
   p
 }
+
+
+
+markPoint = function(p, dat, x, y, z, color = .plotColor[1], seriesIndex = 1){
+  
+  expr = match.call()
+  expr[[1]] = as.name('.dataParse')
+  parList = as.list(expr[-1])
+  dat = eval(expr, parent.frame())
+  if(is.null(dat$z)) dat$z = NA
+  
+  toList_markPoint = function(d)(
+    mapply(function(x, y, z){
+      list(name = z, coord = c(x, y))
+    }, 
+    d$x, d$y, d$z, 
+    SIMPLIFY = F, USE.NAMES = F)
+  )
+  
+  p@option$series[[seriesIndex]]$markPoint = list(
+    data = toList_markPoint(dat),
+    label = list(
+      normal = list(show = T, position = 'inside', formatter = '{b}')
+    ),
+    itemStyle = list(normal = list(color = color))
+  )
+  p
+}
+
