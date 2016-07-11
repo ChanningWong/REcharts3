@@ -1,10 +1,14 @@
 # A R Interface to [ECharts 3.0](https://github.com/ecomfe/echarts)
 
 
+**This package is <font color=red>under development</font>, more features will be added.**
+
+**这个包目前在<font color=red>开发中</font>。**
+
+
 ## Installation
 
 ```r
-
 devtools::install_github('ChanningWong/REcharts3')
 
 ```
@@ -80,6 +84,7 @@ dat = data.frame(x = LETTERS[1:10])
 dat$proportion = y / sum(y)
 dat$CumulativeProportion = cumsum(dat$proportion)
 dat2 = gather(dat, key, value, -x)
+
 p = his(dat2, x, value, key, label = percent(value, 0), 
         title = 'test', label.show = T, label.position = 'top', yAxis.max = 1)
 p2 = p %>% addSecAxis(series = 'CumulativeProportion', type = 'line', yAxis.max = 1)
@@ -99,6 +104,7 @@ dat1 = data.frame(
         c(120.220813,27.351733), c(120.230813,27.311733), c(120.215,27.322),
         c(120.220,27.323), c(120.230,27.350), c(120.220,27.352), c(120.230,27.312)))
 names(dat1) = c('n', 'type', 'lng', 'lat')
+
 mapLines(dat1, 'lng', 'lat', 'type', title = '行程',
         center = c(dat1$lng[1], dat1$lat[1]), color = c('red', 'blue'),
          effect = list(show = T, constantSpeed = 100, symbol = 'circle', trailLength = 0.2, symbolSize = 5))
