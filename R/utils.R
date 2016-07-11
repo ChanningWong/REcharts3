@@ -116,12 +116,11 @@ addSecAxis = function(p, series, type, yAxis.max = NULL){
   fun(p, ...)
 }
 
-
-
+# id = NULL; width = NULL; height = NULL
 .makeDom = function(p, id = NULL, width = NULL, height = NULL){
   if(is.null(id)) id = p@id
-  if(is.null(width) & p@width > 0) width = p@width
-  if(is.null(height) & p@height > 0) height = p@height
+  if(is.null(width) & p@plotOption$width > 0) width = p@plotOption$width
+  if(is.null(height) & p@plotOption$height > 0) height = p@plotOption$height
   json = RJSONIO::toJSON(p@option, pretty = T)
   
   option = gsub('"formatFunction_label"', p@formatFunction_label, json)
@@ -141,9 +140,9 @@ addSecAxis = function(p, series, type, yAxis.max = NULL){
           window.onresize = function () { ', var, '.resize(); }
          </script>'
   )
+  
 }
 # <script src="http://echarts.baidu.com/dist/echarts.min.js"></script>
-
 
 
 .makeHtml = function(dom){
@@ -215,8 +214,8 @@ renderREcharts3 <- function(expr, env = parent.frame(), quoted = FALSE)
     p <- func()
     
     id = p@id
-    width = ifelse(p@width > 0, p@width, 600) 
-    height = ifelse(p@height > 0, p@height, 350)
+    width = ifelse(p@plotOption$width > 0, p@plotOption$width, 600) 
+    height = ifelse(p@plotOption$height > 0, p@plotOption$height, 350)
     
     json = RJSONIO::toJSON(p@option, pretty = T)
     

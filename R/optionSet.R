@@ -82,235 +82,6 @@
 
 
 
-.setSeriesData = function(dat, xLevels,
-                          xAxisIndex = 0,
-                          yAxisIndex = 0,
-                          type = 'bar', stack = NULL, name = 'name', color = .plotColor[1], 
-                          label.show = T, label.position = 'top'){
-  
-  toList = function(d)(
-    mapply(function(u, v){
-      list(value = u, label = v)
-    } , 
-    d$y, d$label, 
-    SIMPLIFY = F, USE.NAMES = F)
-  )
-  # xLevels = .rev(.pickLevels(d$x))
-  if(label.show){
-    normalList = list(show = label.show,
-                      position = label.position[1],
-                      formatter = 'formatFunction_label')
-  } else {
-    normalList = list(show = F)
-  }
-  
-  if(!is.null(color)){
-    itemStyle = list(normal = list(color = color))
-  }
-  
-  datList = toList(dat)[match(xLevels, .pickLevels(dat$x))]
-  datList[sapply(datList, is.null)] = NA
-  
-  list(name = name,
-       type = type,
-       xAxisIndex = xAxisIndex,
-       yAxisIndex = yAxisIndex,
-       stack = stack,
-       data = datList,
-       label = list(normal = normalList, emphasis = normalList),
-       itemStyle = itemStyle 
-  )
-}
-
-
-.setSeries = function(dat, xLevels, 
-                      type = 'bar', stack = F, name = 'name', color = .plotColor[1], 
-                      label.show = T, label.position = 'top'){
-  
-  if(is.null(dat$z)){
-    series = list(.setSeriesData(dat, xLevels,
-                                 type = type, 
-                                 name = name, 
-                                 label.show = label.show, 
-                                 label.position = label.position,
-                                 color = .plotColor[1]))
-  } else {
-    ff = split(dat, dat$z)
-    ff2 = ff[match(name, names(ff))]
-    series = mapply(.setSeriesData, 
-                    ff2, list(xLevels),
-                    type = type, 
-                    name = name, 
-                    stack = stack,
-                    label.show = label.show, 
-                    label.position = label.position, 
-                    color = as.list(color[seq_along(ff2)]),
-                    SIMPLIFY = F, USE.NAMES = F)
-  }
-  names(series) = NULL
-  series
-}
-
-
-.setSeriesData.pie = function(dat, type = 'pie', name = 'name', color = .plotColor[1], 
-                              label.show = T, 
-                              chart.radius = '50%', chart.position = c('50%', '60%'),
-                              label.position = c('outside', 'inside', 'center')){
-  
-  toList_pie = function(d)(
-    mapply(function(x, u, v){
-      list(name = x, value = u, label = v)
-    } , 
-    as.character(d$x), d$y, d$label, 
-    SIMPLIFY = F, USE.NAMES = F)
-  )
-  
-  if(label.show){
-    normalList = list(show = T,
-                      position = label.position[1],
-                      formatter = 'formatFunction_label')
-  } else {
-    normalList = list(show = T,
-                      position = label.position[1],
-                      formatter = '{b} : {c} ({d}%)')
-  }
-  
-  list(name = name,
-       type = type,
-       radius = chart.radius,
-       center = chart.position,
-       data = toList_pie(dat),
-       label = list(normal = normalList, emphasis = normalList)
-  )
-}
-
-
-
-.setSeriesData.scatter = function(dat, type = 'scatter', name = 'name', color = .plotColor, 
-                              label.show = T, 
-                              label.position = c('outside', 'inside', 'center')){
-  
-  toList_scatter = function(d)(
-    mapply(function(x, y, v){
-      list(value = c(x, y), label = v)
-    } , 
-    d$x, d$y, d$label,
-    SIMPLIFY = F, USE.NAMES = F)
-  )
-  
-  if(label.show){
-    normalList = list(show = T,
-                      position = label.position[1],
-                      formatter = 'formatFunction_label')
-  } else {
-    normalList = list(show = F)
-  }
-  
-  if(!is.null(color)){
-    itemStyle = list(normal = list(color = color))
-  }
-  
-  list(name = name,
-       type = type,
-       data = toList_scatter(dat),
-       label = list(normal = normalList, emphasis = normalList),
-       itemStyle = itemStyle 
-  )
-}
-
-
-
-.setSeries.scatter = function(dat,  
-                              type = 'scatter', name = 'name', color = .plotColor, 
-                              label.show = T, label.position = 'top'){
-  
-  if(is.null(dat$z)){
-    series = list(.setSeriesData.scatter(dat, 
-                                 type = type, 
-                                 name = name, 
-                                 label.show = label.show, 
-                                 label.position = label.position[1],
-                                 color = .plotColor[1]))
-  } else {
-    ff = split(dat, dat$z)
-    ff2 = ff[match(name, names(ff))] # name = names(ff)
-    series = mapply(.setSeriesData.scatter, 
-                    ff2, 
-                    type = type, 
-                    name = name, 
-                    label.show = label.show, 
-                    label.position = label.position[1], 
-                    color = as.list(color[seq_along(ff2)]),
-                    SIMPLIFY = F, USE.NAMES = F)
-  }
-  names(series) = NULL
-  series
-}
-
-
-
-
-.setSeriesData.mapLine = function(dat, type = 'lines', name = 'name', color = .plotColor, 
-                                     label.show = T, 
-                                     label.position = c('outside', 'inside', 'center')){
-  
-  toList_mapScatter = function(d)(
-    mapply(function(x, y){
-      c(x, y)
-    }, 
-    d$x, d$y, 
-    SIMPLIFY = F, USE.NAMES = F)
-  )
-  
-  if(label.show){
-    normalList = list(show = T,
-                      position = label.position[1],
-                      formatter = 'formatFunction_label')
-  } else {
-    normalList = list(show = F)
-  }
-  
-  list(name = name,
-       type = type,
-       coordinateSystem = 'bmap',
-       data = list(list(coords = toList_mapScatter(dat))),
-       label = list(normal = normalList, emphasis = normalList),
-       polyline = T,
-       lineStyle = list(
-         normal = list(color = color,
-                       opacity = 0.6,
-                       width = 1)
-       )
-       
-  )
-}
-
-.setSeries.mapLine = function(dat,  
-                              type = 'lines', name = 'name', color = .plotColor, 
-                              label.show = T, label.position = 'top'){
-  
-  if(is.null(dat$z)){
-    series = list(.setSeriesData.mapLine(dat, 
-                                         type = type, 
-                                         name = name, 
-                                         label.show = label.show, 
-                                         label.position = label.position[1],
-                                         color = .plotColor[1]))
-  } else {
-    ff = split(dat, dat$z)
-    ff2 = ff[match(name, names(ff))] # name = names(ff)
-    series = mapply(.setSeriesData.mapLine, 
-                    ff2, 
-                    type = type, 
-                    name = name, 
-                    label.show = label.show, 
-                    label.position = label.position[1], 
-                    color = as.list(color[seq_along(ff2)]),
-                    SIMPLIFY = F, USE.NAMES = F)
-  }
-  names(series) = NULL
-  series
-}
 
 
 coord_rotate = function(p){
@@ -330,6 +101,303 @@ coord_rotate = function(p){
 
 
 
+
+
+.dataParse = function(dat, x, y, z = NULL, facets = NULL, label = NULL, type = 'bar', ...){
+  
+  parList = as.list(match.call()[-1])
+  if(is.character(parList$x)) parList$x = as.name(parList$x)
+  if(is.character(parList$y)) parList$y = as.name(parList$y)
+  if(is.character(parList$z)) parList$z = as.name(parList$z)
+  if(is.character(parList$label)) parList$label = as.name(parList$label)
+  if(is.character(parList$facets)) parList$facets = as.name(parList$facets)
+  
+  d = data.frame(x = eval(parList$x, dat), 
+                 y = eval(parList$y, dat), 
+                 stringsAsFactors = F)
+  if(!is.null(parList$z)) d$z = eval(parList$z, dat)
+  if(!is.null(parList$label)) d$label = eval(parList$label, dat)
+  if(!is.null(parList$facets)) d$facets = eval(parList$facets, dat)
+  
+  if(type == 'scatter'){
+    if(is.null(d$label)) d$label = paste0(d$x, ' , ', d$y)
+  } else {
+    if(is.null(d$label)) d$label = d$y
+  }
+  d
+}
+
+
+.dataList = function(dat, type = 'bar'){
+  
+  d = new("REcharts3Data")
+  d@var = names(dat)
+  d@type = type
+  if(type %in% c('his', 'bar', 'line', 'pie')){ 
+    d@xLevelsName = .pickLevels(dat$x)
+  }
+  # d@yLevelsName = .pickLevels(dat$y)
+  if(!is.null(dat$z)) d@seriesName = .pickLevels(dat$z)
+  if(!is.null(dat$facets)) d@facetsName = .pickLevels(dat$facets)
+  
+  if(is.null(dat$facets)){
+    dataList = list(dat)
+  } else {
+    dataList = lapply(split(dat, dat$facets), `[`, setdiff(names(dat), 'facets'))
+  }
+  d@data = dataList
+  d
+}
+
+
+
+# dat = dataList@data[[1]]
+# xLevelsName = dataList@xLevelsName; type = 'lines'
+.setDataSeries = function(dat, xLevelsName, type = 'bar'){
+  
+  toList.bar = function(d){
+    mapply(function(u, v) list(value = u, label = v), d$y, d$label, SIMPLIFY = F, USE.NAMES = F)
+  }
+  # toList.bar(dat)
+  
+  toList.pie = function(d){
+    if(is.factor(d$x)) d$x = as.character(d$x)
+    mapply(function(x, y) list(name = x, value = y), d$x, d$y, SIMPLIFY = F, USE.NAMES = F)
+  }
+  # toList.pie(dat)
+  
+  toList.scatter = function(d)(
+    mapply(function(x, y, v){
+      list(value = c(x, y), label = v)
+    } , 
+    d$x, d$y, d$label,
+    SIMPLIFY = F, USE.NAMES = F)
+  )
+  
+  toList.lines = function(d)(
+    mapply(function(x, y) c(x, y), d$x, d$y, SIMPLIFY = F, USE.NAMES = F)
+  )
+  
+  if(type %in% c('bar', 'his', 'line')){
+    toList = toList.bar
+  } else if (type == 'pie') {
+    toList = toList.pie
+  } else if (type == 'scatter') {
+    toList = toList.scatter
+  } else if (type == 'lines') {
+    toList = toList.lines
+  }
+  
+  
+  if(type %in% c('bar', 'his', 'line')){
+    toList2 = function(d){
+      y = toList(d)[match(xLevelsName, .pickLevels(d$x))]
+      y[sapply(y, is.null)] = NA
+      y
+    }
+  } else toList2 = toList  
+  
+  
+  if(type != 'lines'){
+    if(is.null(dat$z)){
+      datSeries = list(toList2(dat))
+      names(datSeries) = 'data'
+    } else {
+      datSeries = lapply(split(dat, dat$z), function(x) toList2(x))
+    }
+  } else {
+    if(is.null(dat$z)){
+      datSeries = list(list(coords = toList2(dat)))
+      names(datSeries) = 'data'
+    } else {
+      datSeries = lapply(split(dat, dat$z), function(x) list(list(coords = toList2(x))))
+    }
+  }
+    
+  datSeries
+}
+
+
+
+
+# type = 'lines'; label.show = T; label.position = 'top'; stack = T;color = .plotColor
+.setSeries = function(dataList, type = 'bar', stack = F, color = .plotColor, 
+                      label.show = T, label.position = 'top', ...){
+  
+  dataSeries = lapply(dataList@data, function(s){ # s = dataList@data[[1]]
+    y = .setDataSeries(s, xLevelsName = dataList@xLevelsName, type = type)
+    z = y[match(dataList@seriesName, names(y))]
+    names(z) = NULL
+    z
+  })
+  if('facets' %in% dataList@var){ 
+    dataSeries = dataSeries[match(dataList@facetsName, names(dataSeries))]
+    names(dataSeries) = NULL
+  }
+  
+  if(label.show){
+    normalList = list(show = label.show,
+                      position = label.position[1],
+                      formatter = 'formatFunction_label')
+  } else {
+    normalList = list(show = F)
+  }
+  
+  if(type %in% c('bar', 'his', 'line')){
+    len = length(dataList@seriesName)
+  } else if(type == 'pie'){
+    len = length(dataList@xLevelsName)
+  }
+  plotColor = rep(.plotColor, ceiling(len/length(.plotColor)))[1:len]
+  
+  
+  k = 1
+  series = list()
+  for(i in 1:length(dataList@facetsName)){ # i = 1
+    for(j in 1:length(dataList@seriesName)){ # j = 1
+      series[[k]] = list(name = dataList@seriesName[j],
+                         xAxisIndex = i - 1,
+                         yAxisIndex = i - 1, 
+                         type = type,
+                         data = dataSeries[[i]][[j]],
+                         label = list(normal = normalList, 
+                                      emphasis = normalList),
+                         ...)
+      
+      if(type %in% c('bar', 'his', 'line')){
+        series[[k]]$itemStyle = list(normal = list(color = plotColor[j]))
+      } else if(type == 'pie'){
+        series[[k]]$data = mapply(function(x, y){
+          x$itemStyle = list(normal = list(color = y))
+          x
+        }, series[[k]]$data, as.list(plotColor), SIMPLIFY = F, USE.NAMES = F)
+      }
+      
+      
+      if(stack) series[[k]]$stack = dataList@facetsName[i]
+      
+      k = k + 1
+    }    
+  }
+  series
+}
+
+
+
+
+
+
+.setBmap = function(center, zoom){
+  
+  
+  styleJson = list(
+    list(
+      'featureType' = 'water',
+      'elementType' = 'all',
+      'stylers' = list(
+        'color' = '#d1d1d1'
+      )
+    ), list(
+      'featureType' = 'land',
+      'elementType' = 'all',
+      'stylers' = list(
+        'color' = '#f3f3f3'
+      )
+    ), list(
+      'featureType' = 'railway',
+      'elementType' = 'all',
+      'stylers' = list(
+        'visibility' = 'off'
+      )
+    ), list(
+      'featureType' = 'highway',
+      'elementType' = 'all',
+      'stylers' = list(
+        'color' = '#fdfdfd'
+      )
+    ), list(
+      'featureType' = 'highway',
+      'elementType' = 'labels',
+      'stylers' = list(
+        'visibility' = 'off'
+      )
+    ), list(
+      'featureType' = 'arterial',
+      'elementType' = 'geometry',
+      'stylers' = list(
+        'color' = '#fefefe'
+      )
+    ), list(
+      'featureType' = 'arterial',
+      'elementType' = 'geometry.fill',
+      'stylers' = list(
+        'color' = '#fefefe'
+      )
+    ), list(
+      'featureType' = 'poi',
+      'elementType' = 'all',
+      'stylers' = list(
+        'visibility' = 'on'
+      )
+    ), list(
+      'featureType' = 'green',
+      'elementType' = 'all',
+      'stylers' = list(
+        'visibility' = 'off'
+      )
+    ), list(
+      'featureType' = 'subway',
+      'elementType' = 'all',
+      'stylers' = list(
+        'visibility' = 'off'
+      )
+    ), list(
+      'featureType' = 'manmade',
+      'elementType' = 'all',
+      'stylers' = list(
+        'color' = '#d1d1d1'
+      )
+    ), list(
+      'featureType' = 'local',
+      'elementType' = 'all',
+      'stylers' = list(
+        'color' = '#d1d1d1'
+      )
+    ), list(
+      'featureType' = 'arterial',
+      'elementType' = 'labels',
+      'stylers' = list(
+        'visibility' = 'off'
+      )
+    ), list(
+      'featureType' = 'boundary',
+      'elementType' = 'all',
+      'stylers' = list(
+        'color' = '#fefefe'
+      )
+    ), list(
+      'featureType' = 'building',
+      'elementType' = 'all',
+      'stylers' = list(
+        'color' = '#d1d1d1'
+      )
+    ), list(
+      'featureType' = 'label',
+      'elementType' = 'labels.text.fill',
+      'stylers' = list(
+        'color' = '#999999'
+      )
+    )
+  )
+  
+  
+  mList = list(center = center,
+               zoom = zoom,
+               roam = T,
+               mapStyle = list(styleJson = styleJson)
+  )
+  mList
+}
 
 
 

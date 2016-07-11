@@ -50,13 +50,24 @@ line(airquality[1:20, ], paste0(Month, '-', Day), Temp, title = 'airquality')
 
 ```r
 dat1 = aggregate(weight ~ feed, data = chickwts, mean)
-pie(dat1, feed, weight, label = round(weight*10, 0), title = 'title')
-donut(dat1, feed, weight, title = 'title')
+pie(dat1, feed, weight, label = round(weight*10, 0), title = 'Pie Plot')
+donut(dat1, feed, weight, title = 'Pie Plot')
 ```
 
 ![Pie Plot 1](screenshots/pieplot1.png)
 ![Pie Plot 2](screenshots/pieplot2.png)
 
+
+
+### Scatter Plot
+
+```r
+warpbreaks$x1 = runif(nrow(warpbreaks))
+warpbreaks$y1 = runif(nrow(warpbreaks))
+scatter(warpbreaks, x1, y1, wool, paste0('tension: ', tension), title = 'Scatter Plot')
+```
+
+![Scatter Plot 1](screenshots/scatterplot1.png)
 
 
 
@@ -79,7 +90,21 @@ p2
 
 
 
+### Map Plot
+```r
+dat1 = data.frame(
+  n = 1:10,
+  type = rep(c('day1', 'day2'), each = 5),
+  rbind(c(120.210813,27.321733), c(120.220813,27.321733), c(120.230813,27.351733),
+        c(120.220813,27.351733), c(120.230813,27.311733), c(120.215,27.322),
+        c(120.220,27.323), c(120.230,27.350), c(120.220,27.352), c(120.230,27.312)))
+names(dat1) = c('n', 'type', 'lng', 'lat')
+mapLines(dat1, 'lng', 'lat', 'type', title = '行程',
+        center = c(dat1$lng[1], dat1$lat[1]), color = c('red', 'blue'),
+         effect = list(show = T, constantSpeed = 100, symbol = 'circle', trailLength = 0.2, symbolSize = 5))
+```
 
+![Map Plot 1](screenshots/mapplot1.png)
 
 
 

@@ -1,9 +1,5 @@
 
 export(setLayer)
-export(setLayer.pie)
-export(setLayer.scatter)
-export(setLayer.bmap)
-export(.dataParse)
 
 export(bar)
 export(his)
@@ -11,12 +7,12 @@ export(line)
 export(pie)
 export(donut)
 export(scatter)
-export(mapLine)
-export(markPoint)
+export(mapLines)
 export(markScatter)
-
+export(markPoint)
 
 export(percent)
+export(rmNULL)
 export(addSecAxis)
 export(`+.REcharts3`)
 export(plot.REcharts3)
