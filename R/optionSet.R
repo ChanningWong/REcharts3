@@ -135,10 +135,17 @@ coord_rotate = function(p){
   d@type = type
   if(type %in% c('his', 'bar', 'line', 'pie')){ 
     d@xLevelsName = .pickLevels(dat$x)
+  } else if(type == 'graph'){
+    d@xLevelsName = unique(c(.pickLevels(dat$x), .pickLevels(dat$y)))
   }
   # d@yLevelsName = .pickLevels(dat$y)
   if(!is.null(dat$z)) d@seriesName = .pickLevels(dat$z)
   if(!is.null(dat$facets)) d@facetsName = .pickLevels(dat$facets)
+  
+  if(type == 'graph'){
+    dat$x = match(dat$x, d@xLevelsName) - 1
+    dat$y = match(dat$y, d@xLevelsName) - 1
+  }
   
   if(is.null(dat$facets)){
     dataList = list(dat)
@@ -167,16 +174,17 @@ coord_rotate = function(p){
   # toList.pie(dat)
   
   toList.scatter = function(d)(
-    mapply(function(x, y, v){
-      list(value = c(x, y), label = v)
-    } , 
-    d$x, d$y, d$label,
-    SIMPLIFY = F, USE.NAMES = F)
+    mapply(function(x, y, v) list(value = c(x, y), label = v), 
+    d$x, d$y, d$label, SIMPLIFY = F, USE.NAMES = F)
   )
   
   toList.lines = function(d)(
     mapply(function(x, y) c(x, y), d$x, d$y, SIMPLIFY = F, USE.NAMES = F)
   )
+  
+  toList.graph = function(d){
+    mapply(function(x, y) list(`source` = x, target = y), d$x, d$y, SIMPLIFY = F, USE.NAMES = F)
+  }
   
   if(type %in% c('bar', 'his', 'line')){
     toList = toList.bar
@@ -186,6 +194,8 @@ coord_rotate = function(p){
     toList = toList.scatter
   } else if (type == 'lines') {
     toList = toList.lines
+  } else if (type == 'graph') {
+    toList = toList.graph
   }
   
   
@@ -220,7 +230,7 @@ coord_rotate = function(p){
 
 
 
-# type = 'lines'; label.show = T; label.position = 'top'; stack = T;color = .plotColor
+# type = 'graph'; label.show = T; label.position = 'top'; stack = T;color = .plotColor
 .setSeries = function(dataList, type = 'bar', stack = F, color = .plotColor, 
                       label.show = T, label.position = 'top', ...){
   
@@ -230,6 +240,7 @@ coord_rotate = function(p){
     names(z) = NULL
     z
   })
+  
   if('facets' %in% dataList@var){ 
     dataSeries = dataSeries[match(dataList@facetsName, names(dataSeries))]
     names(dataSeries) = NULL
@@ -243,7 +254,7 @@ coord_rotate = function(p){
     normalList = list(show = F)
   }
   
-  if(type %in% c('bar', 'his', 'line')){
+  if(type %in% c('bar', 'his', 'line', 'graph')){
     len = length(dataList@seriesName)
   } else if(type == 'pie'){
     len = length(dataList@xLevelsName)
@@ -259,20 +270,24 @@ coord_rotate = function(p){
                          xAxisIndex = i - 1,
                          yAxisIndex = i - 1, 
                          type = type,
-                         data = dataSeries[[i]][[j]],
                          label = list(normal = normalList, 
                                       emphasis = normalList),
                          ...)
       
       if(type %in% c('bar', 'his', 'line')){
+        series[[k]]$data = dataSeries[[i]][[j]]
         series[[k]]$itemStyle = list(normal = list(color = plotColor[j]))
       } else if(type == 'pie'){
+        series[[k]]$data = dataSeries[[i]][[j]]
         series[[k]]$data = mapply(function(x, y){
           x$itemStyle = list(normal = list(color = y))
           x
         }, series[[k]]$data, as.list(plotColor), SIMPLIFY = F, USE.NAMES = F)
+      } else if(type == 'graph'){
+        series[[k]]$data = dataList@xLevelsName
+        series[[k]]$links = dataSeries[[i]][[j]]
+        series[[k]]$itemStyle = list(normal = list(color = plotColor[j]))
       }
-      
       
       if(stack) series[[k]]$stack = dataList@facetsName[i]
       

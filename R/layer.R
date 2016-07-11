@@ -12,7 +12,7 @@
 # xAxis.inverse = F; axisLabel.interval.x = NULL; axisLabel.interval.y = NULL;
 # width = NULL; height = NULL;
 # chart.radius = '70%'; chart.position = c('50%', '55%')
-
+# draggable = T;repulsion = 200;gravity = 0.1;edgeLength = 50;layoutAnimation = F;focusNodeAdjacency = F
 
 setLayer = function(dataList, type = 'bar', 
                     ..., stack = F, color = .plotColor,
@@ -101,13 +101,17 @@ setLayer = function(dataList, type = 'bar',
   
   
   p = new("REcharts3")
-  p@id = paste('ID', format(Sys.time(), "%Y%m%d%H%M%S"), substring(runif(1), 3, 5), sep = '_')
+  p@id = paste('ID', format(Sys.time(), "%y%m%d%H%M%S"), substring(runif(1), 3, 5), type, sep = '_')
   p@id = gsub('\\..*', '', p@id)
   p@type = type
   p@option = rmNULL(optionList)
+  p@xLevelsName = dataList@xLevelsName
+  p@yLevelsName = dataList@yLevelsName
+  p@seriesName = dataList@seriesName
+  p@facetsName = dataList@facetsName
   p@plotOption = list(width = ifelse(!is.null(width), width, 0),
                       height = ifelse(!is.null(height), height, 0))
-  if(type %in% c('line', 'bar', 'his')){
+  if(type %in% c('line', 'bar', 'his', 'graph')){
     p@formatFunction_label = 'function(params){return params.data.label}'
     p@formatFunction_tooltip = 'function(params){return params.name + \':<br>\' + params.seriesName + \' : \' + params.data.label}'
   } else if(type == 'pie'){
@@ -125,6 +129,7 @@ setLayer = function(dataList, type = 'bar',
 
 
 
+
 bar = function(dat, x, y, z = NULL, facets = NULL, label = NULL, 
                label.show = F, barGap = '10%', legend.left = 'center', ...){
   
@@ -135,10 +140,14 @@ bar = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
   dataList = .dataList(dat, type = 'bar')
   
   if(!is.null(expr$label)) label.show = T
-  p = setLayer(dataList, type = 'bar', label.show = label.show, barGap = barGap, legend.left = legend.left, ...)
-  
+  p = setLayer(dataList, type = 'bar', xAxis.inverse = T,
+               label.show = label.show, barGap = barGap, legend.left = legend.left, ...)
+
   coord_rotate(p)
 }
+
+
+
 
 his = function(dat, x, y, z = NULL, facets = NULL, label = NULL, 
                label.show = F, barGap = '10%', legend.left = 'center', ...){
@@ -153,6 +162,8 @@ his = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
   p = setLayer(dataList, type = 'bar', label.show = label.show, barGap = barGap, legend.left = legend.left, ...)
   p
 }
+
+
 
 
 line = function(dat, x, y, z = NULL, facets = NULL, label = NULL, 
@@ -171,6 +182,7 @@ line = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
 
 
 
+
 scatter = function(dat, x, y, z = NULL, facets = NULL, label = NULL, 
                    label.show = F, legend.left = 'center', ...){
   
@@ -185,6 +197,7 @@ scatter = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
   p = setLayer(dataList, type = 'scatter', label.show = label.show, legend.left = legend.left, ...)
   p
 }
+
 
 
 
@@ -210,6 +223,8 @@ pie = function(dat, x, y, facets = NULL, label = NULL,
 }
 
 
+
+
 donut = function(dat, x, y, facets = NULL, label = NULL, 
                  label.show = T, label.position = 'outside', 
                  chart.radius = c('40%', '60%'), chart.position = c('50%', '55%'),
@@ -230,6 +245,31 @@ donut = function(dat, x, y, facets = NULL, label = NULL,
                ...)
   p
 }
+
+
+
+
+force = function(dat, x, y, z = NULL, facets = NULL, label = NULL, 
+                 draggable = T, repulsion = 200, gravity = 0.1, edgeLength = 50, layoutAnimation = T,
+                 focusNodeAdjacency = F,
+                ...){
+  
+  expr = match.call()
+  expr[[1]] = as.name('.dataParse')
+  parList = as.list(expr[-1])
+  parList[['type']] = 'graph'
+  dat = eval(expr, parent.frame())
+  dataList = .dataList(dat, type = 'graph')
+  
+  # if(!is.null(expr$label)) label.show = T
+  p = setLayer(dataList, type = 'graph', layout = 'force', 
+               draggable = draggable, focusNodeAdjacency = focusNodeAdjacency,
+           force = list(repulsion = repulsion, gravity = gravity, 
+                        edgeLength = edgeLength, layoutAnimation = layoutAnimation), 
+           ...)
+  p
+}
+
 
 
 
