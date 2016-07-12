@@ -1,4 +1,6 @@
 
+export(.dataParse)
+export(.dataList)
 export(setLayer)
 
 export(bar)

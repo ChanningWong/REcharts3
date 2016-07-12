@@ -230,7 +230,7 @@ coord_rotate = function(p){
 
 
 
-# type = 'graph'; label.show = T; label.position = 'top'; stack = T;color = .plotColor
+# type = 'scatter'; label.show = T; label.position = 'top'; stack = T;color = .plotColor
 .setSeries = function(dataList, type = 'bar', stack = F, color = .plotColor, 
                       label.show = T, label.position = 'top', ...){
   
@@ -254,7 +254,7 @@ coord_rotate = function(p){
     normalList = list(show = F)
   }
   
-  if(type %in% c('bar', 'his', 'line', 'graph')){
+  if(type %in% c('bar', 'his', 'line', 'scatter', 'graph')){
     len = length(dataList@seriesName)
   } else if(type == 'pie'){
     len = length(dataList@xLevelsName)
@@ -274,7 +274,7 @@ coord_rotate = function(p){
                                       emphasis = normalList),
                          ...)
       
-      if(type %in% c('bar', 'his', 'line')){
+      if(type %in% c('bar', 'his', 'line', 'scatter')){
         series[[k]]$data = dataSeries[[i]][[j]]
         series[[k]]$itemStyle = list(normal = list(color = plotColor[j]))
       } else if(type == 'pie'){

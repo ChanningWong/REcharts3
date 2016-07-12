@@ -3,11 +3,20 @@
 setClass("REcharts3", 
          representation(id = "character", 
                         type = "character",
+                        xLevelsName = "vector",
+                        yLevelsName = "vector",
+                        seriesName = "vector",
+                        facetsName = "vector",
                         option = "list",
                         plotOption = "list", 
                         formatFunction_label = 'character',
-                        formatFunction_tooltip = 'character')
+                        formatFunction_tooltip = 'character'),
+         prototype = list(xLevelsName = NA,
+                          yLevelsName = NA,
+                          seriesName = 'data',
+                          facetsName = 'total')
 )
+
 
 setMethod("show",
           signature(object = "REcharts3"),

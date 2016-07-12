@@ -20,7 +20,7 @@ no return
 nothing
 }
 \author{
-Dan Zhang
+Channing Wong
 }
 \note{
 nothing
