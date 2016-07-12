@@ -103,7 +103,9 @@ coord_rotate = function(p){
 
 
 
-.dataParse = function(dat, x, y, z = NULL, facets = NULL, label = NULL, type = 'bar', ...){
+.dataParse = function(dat, x, y, z = NULL, facets = NULL, label = NULL, 
+                      size = NULL,
+                      type = 'bar', ...){
   
   parList = as.list(match.call()[-1])
   if(is.character(parList$x)) parList$x = as.name(parList$x)
@@ -111,6 +113,7 @@ coord_rotate = function(p){
   if(is.character(parList$z)) parList$z = as.name(parList$z)
   if(is.character(parList$label)) parList$label = as.name(parList$label)
   if(is.character(parList$facets)) parList$facets = as.name(parList$facets)
+  if(is.character(parList$size)) parList$size = as.name(parList$size)
   
   d = data.frame(x = eval(parList$x, dat), 
                  y = eval(parList$y, dat), 
@@ -118,9 +121,12 @@ coord_rotate = function(p){
   if(!is.null(parList$z)) d$z = eval(parList$z, dat)
   if(!is.null(parList$label)) d$label = eval(parList$label, dat)
   if(!is.null(parList$facets)) d$facets = eval(parList$facets, dat)
+  if(!is.null(parList$size)) d$size = eval(parList$size, dat) else d$size = NA
   
   if(type == 'scatter'){
     if(is.null(d$label)) d$label = paste0(d$x, ' , ', d$y)
+  } else if(type == 'heatmap'){
+    if(is.null(d$label)) d$label = paste0(d$x, ' , ', d$y, ' , ', d$z)
   } else {
     if(is.null(d$label)) d$label = d$y
   }
@@ -133,13 +139,14 @@ coord_rotate = function(p){
   d = new("REcharts3Data")
   d@var = names(dat)
   d@type = type
-  if(type %in% c('his', 'bar', 'line', 'pie')){ 
+  if(type %in% c('his', 'bar', 'line', 'pie', 'heatmap')){ 
     d@xLevelsName = .pickLevels(dat$x)
+    if(type %in% 'heatmap') d@yLevelsName = .pickLevels(dat$y)
   } else if(type == 'graph'){
     d@xLevelsName = unique(c(.pickLevels(dat$x), .pickLevels(dat$y)))
   }
   # d@yLevelsName = .pickLevels(dat$y)
-  if(!is.null(dat$z)) d@seriesName = .pickLevels(dat$z)
+  if(!type %in% 'heatmap') if(!is.null(dat$z)) d@seriesName = .pickLevels(dat$z)
   if(!is.null(dat$facets)) d@facetsName = .pickLevels(dat$facets)
   
   if(type == 'graph'){
@@ -158,9 +165,9 @@ coord_rotate = function(p){
 
 
 
-# dat = dataList@data[[1]]
-# xLevelsName = dataList@xLevelsName; type = 'lines'
-.setDataSeries = function(dat, xLevelsName, type = 'bar'){
+# dat = dataList@data[[1]];type = 'scatter'
+# xLevelsName = dataList@xLevelsName; yLevelsName = dataList@yLevelsName
+.setDataSeries = function(dat, type = 'bar', xLevelsName = NULL, yLevelsName = NULL){
   
   toList.bar = function(d){
     mapply(function(u, v) list(value = u, label = v), d$y, d$label, SIMPLIFY = F, USE.NAMES = F)
@@ -174,12 +181,17 @@ coord_rotate = function(p){
   # toList.pie(dat)
   
   toList.scatter = function(d)(
-    mapply(function(x, y, v) list(value = c(x, y), label = v), 
-    d$x, d$y, d$label, SIMPLIFY = F, USE.NAMES = F)
+    mapply(function(x, y, s, l) list(value = c(x, y, s), label = l), 
+    d$x, d$y, d$size, d$label, SIMPLIFY = F, USE.NAMES = F)
   )
   
   toList.lines = function(d)(
     mapply(function(x, y) c(x, y), d$x, d$y, SIMPLIFY = F, USE.NAMES = F)
+  )
+
+  
+  toList.heatmap = function(d)(
+    mapply(function(x, y, z, u) c(x, y, z), d$x_i, d$y_i, d$z, SIMPLIFY = F, USE.NAMES = F)
   )
   
   toList.graph = function(d){
@@ -196,8 +208,9 @@ coord_rotate = function(p){
     toList = toList.lines
   } else if (type == 'graph') {
     toList = toList.graph
+  } else if (type == 'heatmap') {
+    toList = toList.heatmap
   }
-  
   
   if(type %in% c('bar', 'his', 'line')){
     toList2 = function(d){
@@ -208,20 +221,25 @@ coord_rotate = function(p){
   } else toList2 = toList  
   
   
-  if(type != 'lines'){
+  if(type %in% c('bar', 'his', 'line', 'scatter', 'graph')){
     if(is.null(dat$z)){
       datSeries = list(toList2(dat))
       names(datSeries) = 'data'
     } else {
       datSeries = lapply(split(dat, dat$z), function(x) toList2(x))
     }
-  } else {
+  } else if(type == 'lines'){
     if(is.null(dat$z)){
       datSeries = list(list(coords = toList2(dat)))
       names(datSeries) = 'data'
     } else {
       datSeries = lapply(split(dat, dat$z), function(x) list(list(coords = toList2(x))))
     }
+  } else if(type == 'heatmap'){
+    dat$x_i = match(dat$x, xLevelsName)
+    dat$y_i = match(dat$y, yLevelsName)
+    datSeries = list(toList2(dat))
+    names(datSeries) = 'data'
   }
     
   datSeries
@@ -230,12 +248,13 @@ coord_rotate = function(p){
 
 
 
-# type = 'scatter'; label.show = T; label.position = 'top'; stack = T;color = .plotColor
-.setSeries = function(dataList, type = 'bar', stack = F, color = .plotColor, 
+# type = 'heatmap'; label.show = T; label.position = 'top'; stack = F;color = .plotColor
+.setSeries = function(dataList, type = 'bar', stack = F, 
+                      color = .plotColor, opacity = 0.7, symbolSize = 'formatFunction_symbolSize',
                       label.show = T, label.position = 'top', ...){
   
   dataSeries = lapply(dataList@data, function(s){ # s = dataList@data[[1]]
-    y = .setDataSeries(s, xLevelsName = dataList@xLevelsName, type = type)
+    y = .setDataSeries(s, type = type, xLevelsName = dataList@xLevelsName, yLevelsName = dataList@yLevelsName)
     z = y[match(dataList@seriesName, names(y))]
     names(z) = NULL
     z
@@ -258,8 +277,8 @@ coord_rotate = function(p){
     len = length(dataList@seriesName)
   } else if(type == 'pie'){
     len = length(dataList@xLevelsName)
-  }
-  plotColor = rep(.plotColor, ceiling(len/length(.plotColor)))[1:len]
+  } else len = 1
+  plotColor = rep(color, ceiling(len/length(color)))[1:len]
   
   
   k = 1
@@ -276,17 +295,20 @@ coord_rotate = function(p){
       
       if(type %in% c('bar', 'his', 'line', 'scatter')){
         series[[k]]$data = dataSeries[[i]][[j]]
-        series[[k]]$itemStyle = list(normal = list(color = plotColor[j]))
+        series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
+        series[[k]]$symbolSize = symbolSize
       } else if(type == 'pie'){
         series[[k]]$data = dataSeries[[i]][[j]]
         series[[k]]$data = mapply(function(x, y){
-          x$itemStyle = list(normal = list(color = y))
+          x$itemStyle = list(normal = list(color = y, opacity = opacity))
           x
         }, series[[k]]$data, as.list(plotColor), SIMPLIFY = F, USE.NAMES = F)
       } else if(type == 'graph'){
         series[[k]]$data = dataList@xLevelsName
         series[[k]]$links = dataSeries[[i]][[j]]
-        series[[k]]$itemStyle = list(normal = list(color = plotColor[j]))
+        series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
+      } else if(type == 'heatmap'){
+        series[[k]]$data = dataSeries[[i]][[j]]
       }
       
       if(stack) series[[k]]$stack = dataList@facetsName[i]

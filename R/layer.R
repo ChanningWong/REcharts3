@@ -1,6 +1,7 @@
-# type = 'scatter'
+# type = 'heatmap'
 # ncol = NULL; nrow = NULL; facets.fontSize = 14; facets.top = 6;
 # label = NULL; label.show = F; label.position = 'inside'; 
+# opacity = 0.7, symbolSize = 'formatFunction_symbolSize'
 # tooltip.show = T; 
 # type = 'bar'; stack = F; color = .plotColor;
 # title = NULL; title.fontSize = 18; title.top = 0; title.left = 'left';
@@ -15,7 +16,8 @@
 # draggable = T;repulsion = 200;gravity = 0.1;edgeLength = 50;layoutAnimation = F;focusNodeAdjacency = F
 
 setLayer = function(dataList, type = 'bar', 
-                    ..., stack = F, color = .plotColor,
+                    ..., 
+                    stack = F, color = .plotColor, opacity = 0.7, symbolSize = 'formatFunction_symbolSize',
                     ncol = NULL, nrow = NULL, facets.fontSize = 14, facets.top = 6,
                     label = NULL, label.show = F, label.position = 'inside', 
                     tooltip.show = T, 
@@ -34,17 +36,19 @@ setLayer = function(dataList, type = 'bar',
   optionList$series = .setSeries(dataList, 
                                  type = type, color = color, stack = stack,
                                  label.show = label.show, label.position = label.position, 
+                                 opacity = opacity, symbolSize = symbolSize,
                                  ...)
   
   # legendSet
-  legendData = if(type != 'pie') dataList@seriesName else dataList@xLevelsName
-  optionList$legend = .legendSet(data = legendData,
-                                 legend.show = legend.show,
-                                 legend.left = legend.left, legend.top = legend.top,
-                                 legend.right = legend.right, legend.bottom = legend.bottom,
-                                 legend.width = legend.width, legend.height = legend.height,
-                                 legend.orient = legend.orient[1])
-  
+  if(type != 'heatmap'){
+    legendData = if(type != 'pie') dataList@seriesName else dataList@xLevelsName
+    optionList$legend = .legendSet(data = legendData,
+                                   legend.show = legend.show,
+                                   legend.left = legend.left, legend.top = legend.top,
+                                   legend.right = legend.right, legend.bottom = legend.bottom,
+                                   legend.width = legend.width, legend.height = legend.height,
+                                   legend.orient = legend.orient[1])
+  }
   
   # gridSet
   if(is.null(grid.top)){ 
@@ -82,7 +86,7 @@ setLayer = function(dataList, type = 'bar',
   optionList$tooltip = list(show = tooltip.show, formatter = 'formatFunction_tooltip')
   
   # Axis
-  if(type %in% c('bar', 'his', 'line', 'scatter')){
+  if(type %in% c('bar', 'his', 'line', 'scatter', 'heatmap')){
     optionList$xAxis =  list()
     optionList$yAxis =  list()
     for(i in 1:length(dataList@ facetsName)){
@@ -90,10 +94,11 @@ setLayer = function(dataList, type = 'bar',
       optionList$xAxis[[i]] = list(gridIndex = i - 1, 
                                    axisLabel = list(interval = axisLabel.interval.x),
                                    inverse = xAxis.inverse)
-      if(type %in% c('line', 'bar', 'his')) optionList$xAxis[[i]]$data = dataList@xLevelsName
+      if(type %in% c('line', 'bar', 'his', 'heatmap')) optionList$xAxis[[i]]$data = dataList@xLevelsName
       optionList$yAxis[[i]] = list(gridIndex = i - 1, 
                                    axisLabel = list(interval = axisLabel.interval.y),
                                    max = yAxis.max)
+      if(type %in% c('heatmap')) optionList$yAxis[[i]]$data = dataList@yLevelsName
     }
     names(optionList$xAxis) = NULL
     names(optionList$yAxis) = NULL
@@ -111,7 +116,7 @@ setLayer = function(dataList, type = 'bar',
   p@facetsName = dataList@facetsName
   p@plotOption = list(width = ifelse(!is.null(width), width, 0),
                       height = ifelse(!is.null(height), height, 0))
-  if(type %in% c('line', 'bar', 'his', 'graph')){
+  if(type %in% c('line', 'bar', 'his', 'graph', 'heatmap')){
     p@formatFunction_label = 'function(params){return params.data.label}'
     p@formatFunction_tooltip = 'function(params){return params.name + \':<br>\' + params.seriesName + \' : \' + params.data.label}'
   } else if(type == 'pie'){
@@ -120,6 +125,7 @@ setLayer = function(dataList, type = 'bar',
   } else if(type %in% c('scatter', 'lines')){
     p@formatFunction_label = 'function(params){return params.data.label}'
     p@formatFunction_tooltip = 'function(params){return params.seriesName + \' : \' + params.data.label}'
+    p@formatFunction_symbolSize = 'function (data){ return data[2]; }'
   }
   
   p
@@ -139,7 +145,7 @@ bar = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
   dat = eval(expr, parent.frame())
   dataList = .dataList(dat, type = 'bar')
   
-  if(!is.null(expr$label)) label.show = T
+  if(!is.null(expr$label) & is.null(expr$label)) label.show = T
   p = setLayer(dataList, type = 'bar', xAxis.inverse = T,
                label.show = label.show, barGap = barGap, legend.left = legend.left, ...)
 
@@ -158,7 +164,7 @@ his = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
   dat = eval(expr, parent.frame())
   dataList = .dataList(dat, type = 'bar')
   
-  if(!is.null(expr$label)) label.show = T
+  if(!is.null(expr$label) & is.null(expr$label)) label.show = T
   p = setLayer(dataList, type = 'bar', label.show = label.show, barGap = barGap, legend.left = legend.left, ...)
   p
 }
@@ -175,7 +181,7 @@ line = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
   dat = eval(expr, parent.frame())
   dataList = .dataList(dat, type = 'line')
   
-  if(!is.null(expr$label)) label.show = T
+  if(!is.null(expr$label) & is.null(expr$label)) label.show = T
   p = setLayer(dataList, type = 'line', label.show = label.show, legend.left = legend.left, ...)
   p
 }
@@ -183,7 +189,7 @@ line = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
 
 
 
-scatter = function(dat, x, y, z = NULL, facets = NULL, label = NULL, 
+scatter = function(dat, x, y, z = NULL, facets = NULL, label = NULL, size = NULL,
                    label.show = F, legend.left = 'center', ...){
   
   expr = match.call()
@@ -193,7 +199,7 @@ scatter = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
   dat = eval(expr, parent.frame())
   dataList = .dataList(dat, type = 'scatter')
   
-  if(!is.null(expr$label)) label.show = T
+  if(!is.null(expr$label) & is.null(expr$label)) label.show = T
   p = setLayer(dataList, type = 'scatter', label.show = label.show, legend.left = legend.left, ...)
   p
 }
@@ -212,7 +218,7 @@ pie = function(dat, x, y, facets = NULL, label = NULL,
   dat = eval(expr, parent.frame())
   dataList = .dataList(dat, type = 'pie')
   
-  # if(!is.null(expr$label)) label.show = T
+  # if(!is.null(expr$label) & is.null(expr$label)) label.show = T
   p = setLayer(dataList, type = 'pie', 
                label.show = label.show,
                label.position = label.position,
@@ -236,7 +242,7 @@ donut = function(dat, x, y, facets = NULL, label = NULL,
   dat = eval(expr, parent.frame())
   dataList = .dataList(dat, type = 'pie')
   
-  # if(!is.null(expr$label)) label.show = T
+  # if(!is.null(expr$label) & is.null(expr$label)) label.show = T
   p = setLayer(dataList, type = 'pie', 
                label.show = label.show,
                label.position = label.position,
@@ -261,7 +267,7 @@ force = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
   dat = eval(expr, parent.frame())
   dataList = .dataList(dat, type = 'graph')
   
-  # if(!is.null(expr$label)) label.show = T
+  # if(!is.null(expr$label) & is.null(expr$label)) label.show = T
   p = setLayer(dataList, type = 'graph', layout = 'force', 
                draggable = draggable, focusNodeAdjacency = focusNodeAdjacency,
            force = list(repulsion = repulsion, gravity = gravity, 
@@ -283,7 +289,7 @@ mapLines = function(dat, x, y, z = NULL, label = NULL,
   dat = eval(expr, parent.frame())
   dataList = .dataList(dat, type = 'lines')
   
-  if(!is.null(expr$label)) label.show = T
+  if(!is.null(expr$label) & is.null(expr$label)) label.show = T
   p = setLayer(dataList, type = 'lines', label.show = label.show, legend.left = legend.left, 
                ..., 
                coordinateSystem = 'bmap', polyline = T, lineStyle = list(width = line.width))

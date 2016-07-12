@@ -125,6 +125,7 @@ addSecAxis = function(p, series, type, yAxis.max = NULL){
   
   option = gsub('"formatFunction_label"', p@formatFunction_label, json)
   option = gsub('"formatFunction_tooltip"', p@formatFunction_tooltip, option)
+  option = gsub('"formatFunction_symbolSize"', p@formatFunction_symbolSize, option)
   
   var = paste0('echart_', id)
   size = if(!is.null(height)) paste0('height:', height, 'px;') else paste0('height:100%;')
@@ -188,22 +189,22 @@ print.REcharts3 = plot.REcharts3
 
 
 
-shinyOuput.REcharts3 = function(p, width = 800, height = 400, id = NULL){
-  
-  if(is.null(id)) id = p@id
-  json = RJSONIO::toJSON(p@option, pretty = T)
-  option = gsub('"formatFunction_label"', p@formatFunction_label, json)
-  option = gsub('"formatFunction_tooltip"', p@formatFunction_tooltip, option)
-  
-  var = paste0('echart_', id)
-  dom = sprintf('
-                <div class="container-fluid">
-                <div id="%s" style="height:%spx;width:%spx;border:0px;padding:10px;"></div>
-                <script type="text/javascript">var %s = echarts.init(document.getElementById(\'%s\'));
-                %s.setOption(%s);</script>
-                </div>', id, height, width, var, id, var, option) # border:1px solid #ccc
-  htmltools::HTML(dom)
-}
+# shinyOuput.REcharts3 = function(p, width = 800, height = 400, id = NULL){
+#   
+#   if(is.null(id)) id = p@id
+#   json = RJSONIO::toJSON(p@option, pretty = T)
+#   option = gsub('"formatFunction_label"', p@formatFunction_label, json)
+#   option = gsub('"formatFunction_tooltip"', p@formatFunction_tooltip, option)
+#   
+#   var = paste0('echart_', id)
+#   dom = sprintf('
+#                 <div class="container-fluid">
+#                 <div id="%s" style="height:%spx;width:%spx;border:0px;padding:10px;"></div>
+#                 <script type="text/javascript">var %s = echarts.init(document.getElementById(\'%s\'));
+#                 %s.setOption(%s);</script>
+#                 </div>', id, height, width, var, id, var, option) # border:1px solid #ccc
+#   htmltools::HTML(dom)
+# }
 
 
 renderREcharts3 <- function(expr, env = parent.frame(), quoted = FALSE) 
@@ -221,6 +222,7 @@ renderREcharts3 <- function(expr, env = parent.frame(), quoted = FALSE)
     
     option = gsub('"formatFunction_label"', p@formatFunction_label, json)
     option = gsub('"formatFunction_tooltip"', p@formatFunction_tooltip, option)
+    option = gsub('"formatFunction_symbolSize"', p@formatFunction_symbolSize, option)
     
     var = paste0('echart_', id)
     size = if(!is.null(height)) paste0('height:', height, 'px;') else paste0('height:100%;')
