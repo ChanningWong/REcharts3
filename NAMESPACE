@@ -13,6 +13,7 @@ export(force)
 export(mapLines)
 export(markScatter)
 export(markPoint)
+export(markAxisLine)
 
 export(percent)
 export(rmNULL)
