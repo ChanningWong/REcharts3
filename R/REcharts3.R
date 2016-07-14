@@ -15,7 +15,10 @@ setClass("REcharts3",
          prototype = list(xLevelsName = NA,
                           yLevelsName = NA,
                           seriesName = 'data',
-                          facetsName = 'total')
+                          facetsName = 'total', 
+                          formatFunction_symbolSize = '',
+                          formatFunction_label = '',
+                          formatFunction_tooltip = '')
 )
 
 

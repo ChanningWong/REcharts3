@@ -66,40 +66,6 @@ rmNULL <- function(x) {
 
 
 
-.dataParse = function(dat, x, y, z = NULL, facets = NULL, label = NULL, type = 'bar', ...){
-  
-  parList = as.list(match.call()[-1])
-  if(is.character(parList$x)) parList$x = as.name(parList$x)
-  if(is.character(parList$y)) parList$y = as.name(parList$y)
-  if(is.character(parList$z)) parList$z = as.name(parList$z)
-  if(is.character(parList$label)) parList$label = as.name(parList$label)
-  if(is.character(parList$facets)) parList$label = as.name(parList$facets)
-  
-  d = data.frame(x = eval(parList$x, dat), 
-                 y = eval(parList$y, dat), 
-                 stringsAsFactors = F)
-  if(!is.null(parList$z)){
-    if(is.character(parList$z)) parList$z = as.name(parList$z)
-    d$z = eval(parList$z, dat)
-  }
-  if(!is.null(parList$label)){
-    if(is.character(parList$label)) parList$label = as.name(parList$label)
-    d$label = eval(parList$label, dat)
-  }
-  if(!is.null(parList$facets)){
-    if(is.character(parList$facets)) parList$facets = as.name(parList$facets)
-    d$facets = eval(parList$facets, dat)
-  }
-  
-  if(type == 'scatter'){
-    if(is.null(d$label)) d$label = paste0(d$x, d$y)
-  } else {
-    if(is.null(d$label)) d$label = d$y
-  }
-  d
-}
-
-
 
 
 addSecAxis = function(p, series, type, yAxis.max = NULL){

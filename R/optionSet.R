@@ -16,6 +16,28 @@
 }
 
 
+
+.toolboxSet = function(toolbox.show = F, 
+                       dataZoom.show = T, 
+                       dataView.show = T, dataView.readOnly = T,
+                       restore.show = T, 
+                       saveAsImage.show = T){
+  if(toolbox.show){
+    list(show = toolbox.show,
+         feature = list(
+           dataZoom = list(show = dataZoom.show),
+           dataView = list(show = dataView.show, readOnly = dataView.readOnly),
+           restore = list(show = restore.show),
+           saveAsImage = list(show = saveAsImage.show)
+         )
+    )
+  } else {
+    list(show = toolbox.show)
+  }
+}
+
+
+
 .seriesLabelSet = function(label.show = T, label.position = NULL){
   
   
@@ -102,7 +124,6 @@ coord_rotate = function(p){
 
 
 
-
 .dataParse = function(dat, x, y, z = NULL, facets = NULL, label = NULL, 
                       size = NULL,
                       type = 'bar', ...){
@@ -111,17 +132,22 @@ coord_rotate = function(p){
   if(is.character(parList$x)) parList$x = as.name(parList$x)
   if(is.character(parList$y)) parList$y = as.name(parList$y)
   if(is.character(parList$z)) parList$z = as.name(parList$z)
-  if(is.character(parList$label)) parList$label = as.name(parList$label)
+  if('label' %in% names(parList)) if(is.character(parList['label'][[1]])) parList['label'][[1]] = as.name(parList['label'][[1]])
+  
+  
   if(is.character(parList$facets)) parList$facets = as.name(parList$facets)
   if(is.character(parList$size)) parList$size = as.name(parList$size)
   
   d = data.frame(x = eval(parList$x, dat), 
                  y = eval(parList$y, dat), 
                  stringsAsFactors = F)
+  
   if(!is.null(parList$z)) d$z = eval(parList$z, dat)
-  if(!is.null(parList$label)) d$label = eval(parList$label, dat)
+  
+  if('label' %in% names(parList)) d$label = eval(parList['label'][[1]], dat)
+  
   if(!is.null(parList$facets)) d$facets = eval(parList$facets, dat)
-  if(!is.null(parList$size)) d$size = eval(parList$size, dat) else d$size = NA
+  if(!is.null(parList$size)) d$size = eval(parList$size, dat)
   
   if(type == 'scatter'){
     if(is.null(d$label)) d$label = paste0(d$x, ' , ', d$y)
@@ -181,8 +207,13 @@ coord_rotate = function(p){
   # toList.pie(dat)
   
   toList.scatter = function(d)(
-    mapply(function(x, y, s, l) list(value = c(x, y, s), label = l), 
-    d$x, d$y, d$size, d$label, SIMPLIFY = F, USE.NAMES = F)
+    if(is.null(d$size)){
+      mapply(function(x, y, l) list(value = c(x, y), label = l), 
+             d$x, d$y, d$label, SIMPLIFY = F, USE.NAMES = F)
+    } else {
+      mapply(function(x, y, s, l) list(value = c(x, y, s), label = l), 
+             d$x, d$y, d$size, d$label, SIMPLIFY = F, USE.NAMES = F)
+    }
   )
   
   toList.lines = function(d)(
@@ -214,7 +245,7 @@ coord_rotate = function(p){
   
   if(type %in% c('bar', 'his', 'line')){
     toList2 = function(d){
-      y = toList(d)[match(xLevelsName, .pickLevels(d$x))]
+      y = toList(d)[match(xLevelsName, d$x)]
       y[sapply(y, is.null)] = NA
       y
     }
@@ -250,7 +281,7 @@ coord_rotate = function(p){
 
 # type = 'heatmap'; label.show = T; label.position = 'top'; stack = F;color = .plotColor
 .setSeries = function(dataList, type = 'bar', stack = F, 
-                      color = .plotColor, opacity = 0.7, symbolSize = 'formatFunction_symbolSize',
+                      color = .plotColor, opacity = 0.7, symbolSize = 10,
                       label.show = T, label.position = 'top', ...){
   
   dataSeries = lapply(dataList@data, function(s){ # s = dataList@data[[1]]
@@ -296,7 +327,7 @@ coord_rotate = function(p){
       if(type %in% c('bar', 'his', 'line', 'scatter')){
         series[[k]]$data = dataSeries[[i]][[j]]
         series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
-        series[[k]]$symbolSize = symbolSize
+        series[[k]]$symbolSize = ifelse('size' %in% dataList@var, 'formatFunction_symbolSize', symbolSize) 
       } else if(type == 'pie'){
         series[[k]]$data = dataSeries[[i]][[j]]
         series[[k]]$data = mapply(function(x, y){

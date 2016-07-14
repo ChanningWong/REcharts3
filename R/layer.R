@@ -1,7 +1,7 @@
 # type = 'heatmap'
 # ncol = NULL; nrow = NULL; facets.fontSize = 14; facets.top = 6;
 # label = NULL; label.show = F; label.position = 'inside'; 
-# opacity = 0.7, symbolSize = 'formatFunction_symbolSize'
+# opacity = 0.7; symbolSize = 'formatFunction_symbolSize'
 # tooltip.show = T; 
 # type = 'bar'; stack = F; color = .plotColor;
 # title = NULL; title.fontSize = 18; title.top = 0; title.left = 'left';
@@ -9,24 +9,26 @@
 # legend.left = 'center'; legend.top = '6%'; 
 # legend.right = NULL; legend.bottom = NULL; legend.width = NULL; legend.height = NULL;
 # grid.left = NULL; grid.top = NULL; grid.right = NULL; grid.bottom = NULL; grid.margin.x = 5; grid.margin.y = 5; 
-# yAxis.max = 'auto';
+# yAxis.max = NULL;
 # xAxis.inverse = F; axisLabel.interval.x = NULL; axisLabel.interval.y = NULL;
+# toolbox.show = F; dataZoom.show = T; dataView.show = T; dataView.readOnly = T; restore.show = T; saveAsImage.show = T;
 # width = NULL; height = NULL;
 # chart.radius = '70%'; chart.position = c('50%', '55%')
 # draggable = T;repulsion = 200;gravity = 0.1;edgeLength = 50;layoutAnimation = F;focusNodeAdjacency = F
 
 setLayer = function(dataList, type = 'bar', 
                     ..., 
-                    stack = F, color = .plotColor, opacity = 0.7, symbolSize = 'formatFunction_symbolSize',
+                    stack = F, color = .plotColor, opacity = 1, symbolSize = 10,
                     ncol = NULL, nrow = NULL, facets.fontSize = 14, facets.top = 6,
                     label = NULL, label.show = F, label.position = 'inside', 
                     tooltip.show = T, 
                     title = NULL, title.fontSize = 18, title.top = 0, title.left = 'left',
-                    legend = NULL, legend.show = T, legend.orient = c('horizontal', 'vertical'),legend.left = 'center', legend.top = '6%', 
+                    legend = NULL, legend.show = T, legend.orient = c('horizontal', 'vertical'),legend.left = 'center', legend.top = '5.5%', 
                     legend.right = NULL, legend.bottom = NULL, legend.width = NULL, legend.height = NULL,
                     grid.left = NULL, grid.top = NULL, grid.right = NULL, grid.bottom = NULL, grid.margin.x = 5, grid.margin.y = 5, 
-                    yAxis.max = 'auto',
+                    yAxis.max = NULL,
                     xAxis.inverse = F, axisLabel.interval.x = NULL, axisLabel.interval.y = NULL,
+                    toolbox.show = F, dataZoom.show = T, dataView.show = T, dataView.readOnly = T, restore.show = T, saveAsImage.show = T,
                     width = NULL, height = NULL){
   
   
@@ -83,7 +85,7 @@ setLayer = function(dataList, type = 'bar',
     optionList$title = c(optionList$title, addTitle)
   }
   
-  optionList$tooltip = list(show = tooltip.show, formatter = 'formatFunction_tooltip')
+
   
   # Axis
   if(type %in% c('bar', 'his', 'line', 'scatter', 'heatmap')){
@@ -103,6 +105,15 @@ setLayer = function(dataList, type = 'bar',
     names(optionList$xAxis) = NULL
     names(optionList$yAxis) = NULL
   }
+  
+  
+  optionList$tooltip = list(show = tooltip.show, formatter = 'formatFunction_tooltip')
+  optionList$toolbox = .toolboxSet(toolbox.show = toolbox.show, 
+                                   dataZoom.show = dataZoom.show, 
+                                   dataView.show = dataView.show, dataView.readOnly = dataView.readOnly,
+                                   restore.show = restore.show, 
+                                   saveAsImage.show = saveAsImage.show)
+  
   
   
   p = new("REcharts3")
@@ -190,7 +201,7 @@ line = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
 
 
 scatter = function(dat, x, y, z = NULL, facets = NULL, label = NULL, size = NULL,
-                   label.show = F, legend.left = 'center', ...){
+                   label.show = F, legend.left = 'center', opacity = 0.7, ...){
   
   expr = match.call()
   expr[[1]] = as.name('.dataParse')
@@ -200,7 +211,9 @@ scatter = function(dat, x, y, z = NULL, facets = NULL, label = NULL, size = NULL
   dataList = .dataList(dat, type = 'scatter')
   
   if(!is.null(expr$label) & is.null(expr$label)) label.show = T
-  p = setLayer(dataList, type = 'scatter', label.show = label.show, legend.left = legend.left, ...)
+  p = setLayer(dataList, type = 'scatter', 
+               label.show = label.show, legend.left = legend.left, 
+               opacity = opacity, ...)
   p
 }
 
@@ -353,6 +366,34 @@ markPoint = function(p, dat, x, y, z, color = .plotColor[1], seriesIndex = 1){
     ),
     itemStyle = list(normal = list(color = color))
   )
+  p
+}
+
+
+markAxisLine = function(p, dat, x, y, type = 'xAxis', 
+                        color = .plotColor[1], seriesIndex = 1){
+  
+  expr = match.call()
+  expr[[1]] = as.name('.dataParse')
+  parList = as.list(expr[-1])
+  dat = eval(expr, parent.frame())
+  if(is.null(dat$z)) dat$z = NA
+  
+  if(type == 'xAxis'){
+    ds = mapply(function(x, y){ 
+      list(xAxis = x, label = y)
+    }, dat$x, dat$y, SIMPLIFY = F, USE.NAMES = F)
+  } else {
+    ds = mapply(function(x, y){ 
+      list(yAxis = x, label = y)
+    }, dat$x, dat$y, SIMPLIFY = F, USE.NAMES = F)
+  }
+  
+  markLine = list(data = ds, 
+                  lineStyle = list(normal = list(color = color)),
+                  label = list(normal = list(formatter = 'formatFunction_label')))
+  
+  p@option$series[[seriesIndex]]$markLine = markLine
   p
 }
 
