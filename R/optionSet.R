@@ -252,7 +252,7 @@ coord_rotate = function(p){
   } else toList2 = toList  
   
   
-  if(type %in% c('bar', 'his', 'line', 'scatter', 'graph')){
+  if(type %in% c('bar', 'his', 'line', 'scatter', 'graph', 'pie')){
     if(is.null(dat$z)){
       datSeries = list(toList2(dat))
       names(datSeries) = 'data'
