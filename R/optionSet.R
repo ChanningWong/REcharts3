@@ -165,7 +165,7 @@ coord_rotate = function(p){
   d = new("REcharts3Data")
   d@var = names(dat)
   d@type = type
-  if(type %in% c('his', 'bar', 'line', 'pie', 'heatmap')){ 
+  if(type %in% c('his', 'bar', 'line', 'lines', 'pie', 'heatmap')){ 
     d@xLevelsName = .pickLevels(dat$x)
     if(type %in% 'heatmap') d@yLevelsName = .pickLevels(dat$y)
   } else if(type == 'graph'){
@@ -324,7 +324,7 @@ coord_rotate = function(p){
                                       emphasis = normalList),
                          ...)
       
-      if(type %in% c('bar', 'his', 'line', 'scatter')){
+      if(type %in% c('bar', 'his', 'line', 'lines', 'scatter')){
         series[[k]]$data = dataSeries[[i]][[j]]
         series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
         series[[k]]$symbolSize = ifelse('size' %in% dataList@var, 'formatFunction_symbolSize', symbolSize) 
