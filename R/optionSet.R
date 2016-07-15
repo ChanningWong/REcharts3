@@ -261,10 +261,10 @@ coord_rotate = function(p){
     }
   } else if(type == 'lines'){
     if(is.null(dat$z)){
-      datSeries = list(list(coords = toList2(dat)))
+      datSeries = list(list(list(coords = toList2(dat))))
       names(datSeries) = 'data'
     } else {
-      datSeries = lapply(split(dat, dat$z), function(x) list(list(coords = toList2(x))))
+      datSeries = lapply(split(dat, dat$z), function(x) list(list(list(coords = toList2(x)))))
     }
   } else if(type == 'heatmap'){
     dat$x_i = match(dat$x, xLevelsName)

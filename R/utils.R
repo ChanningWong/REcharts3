@@ -98,7 +98,7 @@ addSecAxis = function(p, series, type, yAxis.max = NULL){
   size = if(!is.null(width)) paste0(size, 'width:', width, 'px;') else paste0(size, 'width:100%;')
   
   paste0('<div class="container-fluid">
-         <div id="', id, '" style="', size, ';border:1px solid #ccc;padding:10px;"></div>
+         <div id="', id, '" style="', size, ';border:0px solid #ccc;padding:10px;"></div>
          <script type="text/javascript" src="echarts.min.js"></script>
          <script type="text/javascript" src="bmap.min.js"></script>
          <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM"></script>

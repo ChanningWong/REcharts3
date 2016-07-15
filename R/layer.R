@@ -5,6 +5,7 @@
 # tooltip.show = T; 
 # type = 'bar'; stack = F; color = .plotColor;
 # title = NULL; title.fontSize = 18; title.top = 0; title.left = 'left';
+# subtext = NULL; subTitle.fontSize = 14;subTitle.color = '#888',
 # legend = NULL; legend.show = T; legend.orient = c('horizontal', 'vertical');
 # legend.left = 'center'; legend.top = '6%'; 
 # legend.right = NULL; legend.bottom = NULL; legend.width = NULL; legend.height = NULL;
@@ -23,11 +24,13 @@ setLayer = function(dataList, type = 'bar',
                     label = NULL, label.show = F, label.position = 'inside', 
                     tooltip.show = T, 
                     title = NULL, title.fontSize = 18, title.top = 0, title.left = 'left',
+                    subTitle = NULL, subTitle.fontSize = 14, subTitle.color = '#888',
                     legend = NULL, legend.show = T, legend.orient = c('horizontal', 'vertical'),legend.left = 'center', legend.top = '5.5%', 
                     legend.right = NULL, legend.bottom = NULL, legend.width = NULL, legend.height = NULL,
                     grid.left = NULL, grid.top = NULL, grid.right = NULL, grid.bottom = NULL, grid.margin.x = 5, grid.margin.y = 5, 
-                    yAxis.max = NULL,
-                    xAxis.inverse = F, axisLabel.interval.x = NULL, axisLabel.interval.y = NULL,
+                    xAxis.min = NULL, xAxis.max = NULL, xAxis.inverse = F,
+                    yAxis.min = NULL, yAxis.max = NULL, yAxis.inverse = F,
+                    axisLabel.interval.x = NULL, axisLabel.interval.y = NULL,
                     toolbox.show = F, dataZoom.show = T, dataView.show = T, dataView.readOnly = T, restore.show = T, saveAsImage.show = T,
                     width = NULL, height = NULL){
   
@@ -73,7 +76,10 @@ setLayer = function(dataList, type = 'bar',
   # titleSet
   if(!is.null(title)){
     optionList$title = list(list(text = title, fontSize = title.fontSize, 
-                                 top = title.top, left = title.left))
+                                 top = title.top, left = title.left,
+                                 subtext = subTitle, 
+                                 subtextStyle = list(fontSize = subTitle.fontSize, color = subTitle.color)
+                                 ))
   }
   if('facets' %in% dataList@var){
     g = attr(gridSet, 'grid')
@@ -94,10 +100,12 @@ setLayer = function(dataList, type = 'bar',
     for(i in 1:length(dataList@ facetsName)){
       if(i < 1) next
       optionList$xAxis[[i]] = list(gridIndex = i - 1, 
+                                   min =xAxis.min, max = xAxis.max, inverse = xAxis.inverse,
                                    axisLabel = list(interval = axisLabel.interval.x),
                                    inverse = xAxis.inverse)
       if(type %in% c('line', 'bar', 'his', 'heatmap')) optionList$xAxis[[i]]$data = dataList@xLevelsName
       optionList$yAxis[[i]] = list(gridIndex = i - 1, 
+                                   min = yAxis.min, max = yAxis.max, inverse = yAxis.inverse,
                                    axisLabel = list(interval = axisLabel.interval.y),
                                    max = yAxis.max)
       if(type %in% c('heatmap')) optionList$yAxis[[i]]$data = dataList@yLevelsName
