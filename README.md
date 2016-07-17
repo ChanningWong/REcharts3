@@ -112,7 +112,7 @@ mapLines(dat1, 'lng', 'lat', 'type', title = '行程',
 
 ![Map Plot 1](screenshots/mapplot1.png)
 
-
+<br>
 
 
 
@@ -124,30 +124,26 @@ library(REcharts3)
 library(shiny)
 
 shinyApp(
-
   ui = fluidPage(
-    tags$script(src = 'http://echarts.baidu.com/dist/echarts.min.js'),
-    h2('REcharts3'),
-    uiOutput('plot1'),
-    uiOutput('plot2')
+    numericInput("n", "n", 1),
+    RCharts3Output('plot'),
+    RCharts3Output('plot2')
   ),
   
   server = function(input, output) {
     
-    output$plot1 <- renderREcharts3({
-      dat = aggregate(weight ~ feed, data = chickwts, mean)
-      pie(dat, feed, weight, title = 'title', height = 400)
+    
+    output$plot <- renderREcharts3( {
+      dat_test = aggregate(breaks ~ wool + tension, data = warpbreaks, mean)
+      p0 = bar(dat_test, wool, breaks, tension, label = round(breaks*10, 0), stack = T, 
+               title = 'test1', height = 300)
+      p0
     })
     
-    output$plot2 <- renderREcharts3({
-      dat1 = aggregate(weight ~ feed, data = chickwts, mean)
-      dat3 = data.frame(let = letters[1:5], id = 1:5, stringsAsFactors = F)
-      
-      p = donut(dat1, feed, weight, title = 'test')
-      p0 = pie(dat3, let, id, title = 'test', chart.radius = '30%')
-      p@option$series[[2]] = p0@option$series[[1]]
-      p@option$legend$data = c(p0@option$legend$data, p@option$legend$data)
-      p
+    output$plot2 <- renderREcharts3( {
+      dat_test2 = aggregate(weight ~ feed, data = chickwts, mean)
+      p02 = pie(dat1, feed, weight, title = 'test2', height = 400)
+      p02
     })
     
   }
@@ -157,8 +153,21 @@ shinyApp(
 
 ![shiny 1](screenshots/shiny1.png)
 
+<br>
 
 
+## RMarkdown
 
+```
+library(REcharts3, warn.conflicts = F, verbose = F, quietly = T)
+
+incluedRECharts3()
+
+p = line(esoph, agegp, ncontrols, alcgp, facets = tobgp, title = 'Data Set Esoph')
+RECharts3Knit(p, width = 900, height = 600)
+
+```
+
+![knit 1](screenshots/knit_1.png)
 
 

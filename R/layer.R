@@ -125,7 +125,7 @@ setLayer = function(dataList, type = 'bar',
   
   
   p = new("REcharts3")
-  p@id = paste('ID', format(Sys.time(), "%y%m%d%H%M%S"), substring(runif(1), 3, 5), type, sep = '_')
+  p@id = paste(type, format(Sys.time(), "%y%m%d%H%M%S"), substring(runif(1), 3, 5), sep = '_')
   p@id = gsub('\\..*', '', p@id)
   p@type = type
   p@option = rmNULL(optionList)
@@ -315,6 +315,7 @@ mapLines = function(dat, x, y, z = NULL, label = NULL,
                ..., 
                coordinateSystem = 'bmap', polyline = T, lineStyle = list(width = line.width))
   p@option$bmap = .setBmap(center, zoom)
+  p@type = 'mapLines'
   p
 }
 
@@ -402,6 +403,19 @@ markAxisLine = function(p, dat, x, y, type = 'xAxis',
                   label = list(normal = list(formatter = 'formatFunction_label')))
   
   p@option$series[[seriesIndex]]$markLine = markLine
+  p
+}
+
+
+
+
+addSecAxis = function(p, series, type, yAxis.max = NULL){
+  zt.series = sapply(p@option$series, `[[`, 'name')
+  zt.i = which(zt.series == series)
+  p@option$series[[zt.i]]$type = type
+  p@option$series[[zt.i]]$yAxisIndex = p@option$series[[zt.i]]$yAxisIndex + 1
+  p@option$yAxis[[2]] = p@option$yAxis[[1]]
+  if(!is.null(yAxis.max)) p@option$yAxis[[2]]$max = yAxis.max
   p
 }
 
