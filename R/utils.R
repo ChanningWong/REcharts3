@@ -126,14 +126,14 @@ rmNULL <- function(x) {
       ', dom, '
     </body>
  </html>')
-  if(.Platform$OS.type == 'windows') html = iconv(html, 'gbk', 'utf8')
+  
   html
 }
 
 
 
 plot.REcharts3 = print.REcharts3 = function(
-  p, width = NULL, height = NULL, id = NULL, viewer = F, encoding = 'GBK'
+  p, width = NULL, height = NULL, id = NULL, viewer = F, encoding = 'UTF-8'
 ){
   
   if(is.null(id)) id = p@id
