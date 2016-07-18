@@ -276,8 +276,8 @@ donut = function(dat, x, y, facets = NULL, label = NULL,
 
 
 
-force = function(dat, x, y, z = NULL, facets = NULL, label = NULL, 
-                 draggable = T, repulsion = 200, gravity = 0.1, edgeLength = 50, layoutAnimation = T,
+graph = function(dat, x, y, z = NULL, facets = NULL, label = NULL, 
+                 layout = 'force', draggable = T, repulsion = 200, gravity = 0.1, edgeLength = 50, layoutAnimation = T,
                  focusNodeAdjacency = F,
                 ...){
   
@@ -289,7 +289,7 @@ force = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
   dataList = .dataList(dat, type = 'graph')
   
   # if(!is.null(expr$label) & is.null(expr$label)) label.show = T
-  p = setLayer(dataList, type = 'graph', layout = 'force', 
+  p = setLayer(dataList, type = 'graph', layout = layout, 
                draggable = draggable, focusNodeAdjacency = focusNodeAdjacency,
            force = list(repulsion = repulsion, gravity = gravity, 
                         edgeLength = edgeLength, layoutAnimation = layoutAnimation), 
