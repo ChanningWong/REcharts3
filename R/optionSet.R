@@ -142,7 +142,11 @@ coord_rotate = function(p){
                  y = eval(parList$y, dat), 
                  stringsAsFactors = F)
   
-  if(!is.null(parList$z)) d$z = eval(parList$z, dat)
+  if(!is.null(parList$z)){ 
+    d$z = eval(parList$z, dat)
+  } else if(type == 'mapHeatmap'){
+    d$z = 1
+  }
   
   if('label' %in% names(parList)) d$label = eval(parList['label'][[1]], dat)
   
@@ -172,7 +176,13 @@ coord_rotate = function(p){
     d@xLevelsName = unique(c(.pickLevels(dat$x), .pickLevels(dat$y)))
   }
   # d@yLevelsName = .pickLevels(dat$y)
-  if(!type %in% 'heatmap') if(!is.null(dat$z)) d@seriesName = .pickLevels(dat$z)
+  if(!type %in% 'heatmap'){ 
+    if(type == 'mapHeatmap'){
+      d@seriesName = 'data'
+    } else {
+      if(!is.null(dat$z)) d@seriesName = .pickLevels(dat$z)
+    }
+  }
   if(!is.null(dat$facets)) d@facetsName = .pickLevels(dat$facets)
   
   if(type == 'graph'){
@@ -219,10 +229,13 @@ coord_rotate = function(p){
   toList.lines = function(d)(
     mapply(function(x, y) c(x, y), d$x, d$y, SIMPLIFY = F, USE.NAMES = F)
   )
-
   
   toList.heatmap = function(d)(
     mapply(function(x, y, z, u) c(x, y, z), d$x_i, d$y_i, d$z, SIMPLIFY = F, USE.NAMES = F)
+  )
+  
+  toList.mapHeatmap = function(d)(
+    mapply(function(x, y, z, u) list(value = c(x, y, z)), d$x, d$y, d$z, SIMPLIFY = F, USE.NAMES = F)
   )
   
   toList.graph = function(d){
@@ -241,6 +254,8 @@ coord_rotate = function(p){
     toList = toList.graph
   } else if (type == 'heatmap') {
     toList = toList.heatmap
+  } else if (type == 'mapHeatmap') {
+    toList = toList.mapHeatmap
   }
   
   if(type %in% c('bar', 'his', 'line')){
@@ -269,6 +284,9 @@ coord_rotate = function(p){
   } else if(type == 'heatmap'){
     dat$x_i = match(dat$x, xLevelsName)
     dat$y_i = match(dat$y, yLevelsName)
+    datSeries = list(toList2(dat))
+    names(datSeries) = 'data'
+  } else if(type == 'mapHeatmap'){
     datSeries = list(toList2(dat))
     names(datSeries) = 'data'
   }
@@ -338,7 +356,7 @@ coord_rotate = function(p){
         series[[k]]$data = dataList@xLevelsName
         series[[k]]$links = dataSeries[[i]][[j]]
         series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
-      } else if(type == 'heatmap'){
+      } else if(type %in% c('heatmap', 'mapHeatmap')){
         series[[k]]$data = dataSeries[[i]][[j]]
       }
       

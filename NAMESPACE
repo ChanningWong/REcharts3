@@ -11,6 +11,8 @@ export(donut)
 export(scatter)
 export(graph)
 export(heatmap)
+export(mapHeatmap)
+
 export(mapLines)
 export(markScatter)
 export(markPoint)

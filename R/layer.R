@@ -45,7 +45,7 @@ setLayer = function(dataList, type = 'bar',
                                  ...)
   
   # legendSet
-  if(type != 'heatmap'){
+  if(!type %in% c('heatmap', 'mapHeatmap')){
     legendData = if(type != 'pie') dataList@seriesName else dataList@xLevelsName
     optionList$legend = .legendSet(data = legendData,
                                    legend.show = legend.show,
@@ -56,22 +56,24 @@ setLayer = function(dataList, type = 'bar',
   }
   
   # gridSet
-  if(is.null(grid.top)){ 
-    if(!'facets' %in% dataList@var) grid.top = 10 else grid.top = 16
+  if(!type %in% c('mapHeatmap')){
+    if(is.null(grid.top)){ 
+      if(!'facets' %in% dataList@var) grid.top = 10 else grid.top = 16
+    }
+    
+    if(!'facets' %in% dataList@var & is.null(grid.left) & is.null(grid.top) & is.null(grid.right) & is.null(grid.bottom)){
+      gridSet = NULL
+    } else if('facets' %in% dataList@var){ 
+      gridSet = .gridSet_facets(length(dataList@facetsName), ncol = ncol, nrow = nrow, 
+                                grid.left = grid.left, grid.top = grid.top, 
+                                grid.right = grid.right, grid.bottom = grid.bottom,
+                                grid.margin.x = grid.margin.x, grid.margin.y = grid.margin.y)
+    } else {
+      gridSet = .gridSet(grid.left = grid.left, grid.top = grid.top, 
+                         grid.right = grid.right, grid.bottom = grid.bottom)
+    }
+    optionList$grid = gridSet
   }
-  
-  if(!'facets' %in% dataList@var & is.null(grid.left) & is.null(grid.top) & is.null(grid.right) & is.null(grid.bottom)){
-    gridSet = NULL
-  } else if('facets' %in% dataList@var){ 
-    gridSet = .gridSet_facets(length(dataList@facetsName), ncol = ncol, nrow = nrow, 
-                              grid.left = grid.left, grid.top = grid.top, 
-                              grid.right = grid.right, grid.bottom = grid.bottom,
-                              grid.margin.x = grid.margin.x, grid.margin.y = grid.margin.y)
-  } else {
-    gridSet = .gridSet(grid.left = grid.left, grid.top = grid.top, 
-                       grid.right = grid.right, grid.bottom = grid.bottom)
-  }
-  optionList$grid = gridSet
   
   # titleSet
   if(!is.null(title)){
@@ -106,8 +108,7 @@ setLayer = function(dataList, type = 'bar',
       if(type %in% c('line', 'bar', 'his', 'heatmap')) optionList$xAxis[[i]]$data = dataList@xLevelsName
       optionList$yAxis[[i]] = list(gridIndex = i - 1, 
                                    min = yAxis.min, max = yAxis.max, inverse = yAxis.inverse,
-                                   axisLabel = list(interval = axisLabel.interval.y),
-                                   max = yAxis.max)
+                                   axisLabel = list(interval = axisLabel.interval.y))
       if(type %in% c('heatmap')) optionList$yAxis[[i]]$data = dataList@yLevelsName
     }
     names(optionList$xAxis) = NULL
@@ -115,13 +116,14 @@ setLayer = function(dataList, type = 'bar',
   }
   
   
-  optionList$tooltip = list(show = tooltip.show, formatter = 'formatFunction_tooltip')
-  optionList$toolbox = .toolboxSet(toolbox.show = toolbox.show, 
-                                   dataZoom.show = dataZoom.show, 
-                                   dataView.show = dataView.show, dataView.readOnly = dataView.readOnly,
-                                   restore.show = restore.show, 
-                                   saveAsImage.show = saveAsImage.show)
-  
+  if(!type %in% c('mapHeatmap')){
+    optionList$tooltip = list(show = tooltip.show, formatter = 'formatFunction_tooltip')
+    optionList$toolbox = .toolboxSet(toolbox.show = toolbox.show, 
+                                     dataZoom.show = dataZoom.show, 
+                                     dataView.show = dataView.show, dataView.readOnly = dataView.readOnly,
+                                     restore.show = restore.show, 
+                                     saveAsImage.show = saveAsImage.show)
+  }
   
   
   p = new("REcharts3")
@@ -311,13 +313,70 @@ mapLines = function(dat, x, y, z = NULL, label = NULL,
   dataList = .dataList(dat, type = 'lines')
   
   if(!is.null(expr$label) & is.null(expr$label)) label.show = T
+  if(is.null(center)){
+    cd = dataList@data[[1]]
+    center = c(cd$x[!is.na(cd$x) & !is.na(cd$y)][1], cd$y[!is.na(cd$x) & !is.na(cd$y)][1])
+  }
   p = setLayer(dataList, type = 'lines', label.show = label.show, legend.left = legend.left, 
                ..., 
                coordinateSystem = 'bmap', polyline = T, lineStyle = list(width = line.width))
+  p@option$series = lapply(p@option$series, function(x){
+    d = x$data[[1]]$coords
+    if(length(d) == 1) x$data[[1]]$coords[2] = x$data[[1]]$coords[1]
+    x
+  })
   p@option$bmap = .setBmap(center, zoom)
   p@type = 'mapLines'
   p
 }
+
+
+
+mapHeatmap = function(dat, x, y, z = NULL, label = NULL, 
+                      center = NULL, zoom = 14, splitNumber = 5,
+                      label.show = F, legend.left = 'center', ...){
+  
+  expr = match.call()
+  expr[[1]] = as.name('.dataParse')
+  expr[['type']] = 'mapHeatmap'
+  parList = as.list(expr[-1])
+  dat = eval(expr, parent.frame())
+  dataList = .dataList(dat, type = 'mapHeatmap')
+  
+  if(!is.null(expr$label) & is.null(expr$label)) label.show = T
+  if(is.null(center)){
+    cd = dataList@data[[1]]
+    center = c(cd$x[!is.na(cd$x) & !is.na(cd$y)][1], cd$y[!is.na(cd$x) & !is.na(cd$y)][1])
+  }
+  p = setLayer(dataList, type = 'mapHeatmap', label.show = label.show, legend.left = legend.left, 
+               ..., 
+               coordinateSystem = 'bmap')
+  p@option$series[[1]]$type = 'heatmap'
+  p@option$series[[1]]$label = NULL
+  
+  zt.vmmin = min(dataList@data[[1]]$z, na.rm = T)
+  zt.vmmax = max(dataList@data[[1]]$z, na.rm = T)
+  if(zt.vmmin == zt.vmmax){ 
+    zt.vmmin = 0
+    if(zt.vmmax == 0) zt.vmmax = 1
+  }
+  
+  p@option$visualMap = list(
+    min = zt.vmmin, max = zt.vmmax, 
+    splitNumber = splitNumber,
+    inRange = list(
+      color = list('#50a3ba', '#eac736', '#d94e5d')
+    ),
+    textStyle = list(
+      color = list('#fff')
+    )
+  )
+  p@option$bmap = .setBmap(center, zoom)
+  p@type = 'mapHeatmap'
+  p
+}
+
+
 
 
 

@@ -139,6 +139,33 @@ plot.REcharts3 = print.REcharts3 = function(
   if(is.null(id)) id = p@id
   if(is.null(width) & p@plotOption$width > 0) width = p@plotOption$width
   if(is.null(height) & p@plotOption$height > 0) height = p@plotOption$height
+  html = .makeHtml(.makeDom(p, id = id, width = width, height = height), 
+                   p@type %in% c('mapLines', 'mapHeatmap'))
+  
+  plotDir = tempdir()
+  if (!file.exists(plotDir)) dir.create(plotDir, recursive = TRUE)
+  fileDir = paste0(plotDir, '/', id, '.html')
+  con = file(fileDir, 'w', encoding = encoding)
+  writeLines(html, con, useBytes = F)
+  close(con)
+  
+  file.copy(system.file('js/echarts.min.js', package = 'REcharts3'), plotDir, recursive = TRUE)
+  if(p@type %in% c('mapLines', 'mapHeatmap')) file.copy(system.file('js/bmap.min.js', package = 'REcharts3'), plotDir, recursive = TRUE)
+  
+  url = sprintf("http://localhost:%s/session/%s", tools:::httpdPort(), basename(fileDir))
+  if(!is.null(getOption('viewer')) & viewer) rstudio::viewer(url) else browseURL(url)
+  
+}
+
+
+
+plotMultipleREcharts3 = function(
+  p, width = NULL, height = NULL, id = NULL, viewer = F, encoding = 'UTF-8'
+){
+  
+  if(is.null(id)) id = p@id
+  if(is.null(width) & p@plotOption$width > 0) width = p@plotOption$width
+  if(is.null(height) & p@plotOption$height > 0) height = p@plotOption$height
   html = .makeHtml(.makeDom(p, id = id, width = width, height = height), p@type == 'mapLines')
   
   plotDir = tempdir()
@@ -149,7 +176,7 @@ plot.REcharts3 = print.REcharts3 = function(
   close(con)
   
   file.copy(system.file('js/echarts.min.js', package = 'REcharts3'), plotDir, recursive = TRUE)
-  if(p@type == 'mapLines') file.copy(system.file('js/bmap.min.js', package = 'REcharts3'), plotDir, recursive = TRUE)
+  if(p@type %in% c('mapLines', 'mapHeatmap')) file.copy(system.file('js/bmap.min.js', package = 'REcharts3'), plotDir, recursive = TRUE)
   
   url = sprintf("http://localhost:%s/session/%s", tools:::httpdPort(), basename(fileDir))
   if(!is.null(getOption('viewer')) & viewer) rstudio::viewer(url) else browseURL(url)
