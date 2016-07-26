@@ -200,7 +200,7 @@ renderREcharts3 <- function(expr, env = parent.frame(), quoted = FALSE){
 
 
 
-RCharts3Output = function (outputId, inline = FALSE, container = if(inline) span else div,
+RECharts3Output = function (outputId, inline = FALSE, container = if(inline) span else div,
                            ...){
   suppressMessages(singleton(
     addResourcePath('js', system.file('js', package = 'REcharts3'))

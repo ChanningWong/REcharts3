@@ -25,7 +25,7 @@ export(`+.REcharts3`)
 export(plot.REcharts3)
 export(print.REcharts3)
 export(renderREcharts3)
-export(RCharts3Output)
+export(RECharts3Output)
 export(RECharts3Knit)
 export(incluedRECharts3)
 

@@ -126,8 +126,8 @@ library(shiny)
 shinyApp(
   ui = fluidPage(
     numericInput("n", "n", 1),
-    RCharts3Output('plot'),
-    RCharts3Output('plot2')
+    RECharts3Output('plot'),
+    RECharts3Output('plot2')
   ),
   
   server = function(input, output) {
@@ -142,7 +142,7 @@ shinyApp(
     
     output$plot2 <- renderREcharts3( {
       dat_test2 = aggregate(weight ~ feed, data = chickwts, mean)
-      p02 = pie(dat1, feed, weight, title = 'test2', height = 400)
+      p02 = pie(dat_test2, feed, weight, title = 'test2', height = 400)
       p02
     })
     
