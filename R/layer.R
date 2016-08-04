@@ -320,7 +320,7 @@ mapLines = function(dat, x, y, z = NULL, label = NULL,
   }
   p = setLayer(dataList, type = 'lines', label.show = label.show, legend.left = legend.left, 
                ..., 
-               coordinateSystem = 'bmap', polyline = T, lineStyle = list(width = line.width))
+               coordinateSystem = 'bmap', polyline = T, lineStyle = list(normal = list(width = line.width)))
   p@option$series = lapply(p@option$series, function(x){
     d = x$data[[1]]$coords
     if(length(d) == 1) x$data[[1]]$coords[2] = x$data[[1]]$coords[1]
