@@ -12,6 +12,7 @@ export(scatter)
 export(graph)
 export(heatmap)
 export(mapHeatmap)
+export(mapScatter)
 
 export(mapLines)
 export(markScatter)

@@ -56,7 +56,7 @@ setLayer = function(dataList, type = 'bar',
   }
   
   # gridSet
-  if(!type %in% c('mapHeatmap')){
+  if(!type %in% c('mapHeatmap', 'mapScatter')){
     if(is.null(grid.top)){ 
       if(!'facets' %in% dataList@var) grid.top = 10 else grid.top = 16
     }
@@ -116,7 +116,7 @@ setLayer = function(dataList, type = 'bar',
   }
   
   
-  if(!type %in% c('mapHeatmap')){
+  if(!type %in% c('mapHeatmap', 'mapScatter')){
     optionList$tooltip = list(show = tooltip.show, formatter = 'formatFunction_tooltip')
     optionList$toolbox = .toolboxSet(toolbox.show = toolbox.show, 
                                      dataZoom.show = dataZoom.show, 
@@ -303,7 +303,8 @@ graph = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
 
 
 mapLines = function(dat, x, y, z = NULL, label = NULL, 
-                    center = NULL, zoom = 14, line.width = 0.1,
+                    center = NULL, zoom = 14, mapStyle = 'normal', 
+                    line.width = 0.1,
                     label.show = F, legend.left = 'center', ...){
   
   expr = match.call()
@@ -325,15 +326,59 @@ mapLines = function(dat, x, y, z = NULL, label = NULL,
     if(length(d) == 1) x$data[[1]]$coords[2] = x$data[[1]]$coords[1]
     x
   })
-  p@option$bmap = .setBmap(center, zoom)
+  
+  for(i in 1:length(p@option$series)){
+    p@option$series[[i]]$data[[1]]$coords = lapply(p@option$series[[i]]$data[[1]]$coords, as.character)
+  }
+  p@option$bmap = .setBmap(center, zoom, mapStyle)
   p@type = 'mapLines'
   p
 }
 
 
 
+
+mapScatter = function(dat, x, y, z = NULL, label = NULL, 
+                      center = NULL, zoom = 14, mapStyle = 'normal', 
+                      label.show = F, legend.left = 'center', ...){
+  
+  expr = match.call()
+  expr[[1]] = as.name('.dataParse')
+  expr[['type']] = 'mapScatter'
+  parList = as.list(expr[-1])
+  dat = eval(expr, parent.frame())
+  dataList = .dataList(dat, type = 'mapScatter')
+  
+  if(!is.null(expr$label) & is.null(expr$label)) label.show = T
+  if(is.null(center)){
+    cd = dataList@data[[1]]
+    center = c(cd$x[!is.na(cd$x) & !is.na(cd$y)][1], cd$y[!is.na(cd$x) & !is.na(cd$y)][1])
+  }
+  p = setLayer(dataList, type = 'mapScatter', label.show = label.show, legend.left = legend.left, 
+               ..., 
+               coordinateSystem = 'bmap')
+  p@option$series[[1]]$type = 'scatter'
+  p@option$series[[1]]$label = NULL
+  
+  zt.vmmin = min(dataList@data[[1]]$z, na.rm = T)
+  zt.vmmax = max(dataList@data[[1]]$z, na.rm = T)
+  if(zt.vmmin == zt.vmmax){ 
+    zt.vmmin = 0
+    if(zt.vmmax == 0) zt.vmmax = 1
+  }
+  
+  p@option$series[[1]]$data = lapply(p@option$series[[1]]$data, function(x) as.character(x$value))
+  p@option$bmap = .setBmap(center, zoom, mapStyle = mapStyle)
+  p@type = 'mapScatter'
+  p
+}
+
+
+
+
 mapHeatmap = function(dat, x, y, z = NULL, label = NULL, 
-                      center = NULL, zoom = 14, splitNumber = 5,
+                      center = NULL, zoom = 14, mapStyle = 'normal', 
+                      splitNumber = 5,
                       label.show = F, legend.left = 'center', ...){
   
   expr = match.call()
@@ -371,7 +416,9 @@ mapHeatmap = function(dat, x, y, z = NULL, label = NULL,
       color = list('#fff')
     )
   )
-  p@option$bmap = .setBmap(center, zoom)
+  
+  p@option$series[[1]]$data = lapply(p@option$series[[1]]$data, function(x) as.character(x$value))
+  p@option$bmap = .setBmap(center, zoom, mapStyle = mapStyle)
   p@type = 'mapHeatmap'
   p
 }
@@ -411,7 +458,9 @@ markScatter = function(p, dat, x, y, z, color = .plotColor[1]){
 
 
 
-markPoint = function(p, dat, x, y, z, color = .plotColor[1], seriesIndex = 1){
+markPoint = function(p, dat, x, y, z, color = .plotColor[1], 
+                     symbolSize = 20,
+                     seriesIndex = 1){
   
   expr = match.call()
   expr[[1]] = as.name('.dataParse')
@@ -429,6 +478,7 @@ markPoint = function(p, dat, x, y, z, color = .plotColor[1], seriesIndex = 1){
   
   p@option$series[[seriesIndex]]$markPoint = list(
     data = toList_markPoint(dat),
+    symbolSize = symbolSize,
     label = list(
       normal = list(show = T, position = 'inside', formatter = '{b}')
     ),

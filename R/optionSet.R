@@ -144,7 +144,7 @@ coord_rotate = function(p){
   
   if(!is.null(parList$z)){ 
     d$z = eval(parList$z, dat)
-  } else if(type == 'mapHeatmap'){
+  } else if(type %in% c('mapHeatmap', 'mapScatter')){
     d$z = 1
   }
   
@@ -177,7 +177,7 @@ coord_rotate = function(p){
   }
   # d@yLevelsName = .pickLevels(dat$y)
   if(!type %in% 'heatmap'){ 
-    if(type == 'mapHeatmap'){
+    if(type %in% c('mapHeatmap', 'mapScatter')){
       d@seriesName = 'data'
     } else {
       if(!is.null(dat$z)) d@seriesName = .pickLevels(dat$z)
@@ -238,6 +238,10 @@ coord_rotate = function(p){
     mapply(function(x, y, z, u) list(value = c(x, y, z)), d$x, d$y, d$z, SIMPLIFY = F, USE.NAMES = F)
   )
   
+  toList.mapScatter = function(d)(
+    mapply(function(x, y, z, u) list(value = c(x, y, z)), d$x, d$y, d$z, SIMPLIFY = F, USE.NAMES = F)
+  )
+  
   toList.graph = function(d){
     mapply(function(x, y) list(`source` = x, target = y), d$x, d$y, SIMPLIFY = F, USE.NAMES = F)
   }
@@ -256,6 +260,8 @@ coord_rotate = function(p){
     toList = toList.heatmap
   } else if (type == 'mapHeatmap') {
     toList = toList.mapHeatmap
+  } else if (type == 'mapScatter') {
+    toList = toList.mapScatter
   }
   
   if(type %in% c('bar', 'his', 'line')){
@@ -286,7 +292,7 @@ coord_rotate = function(p){
     dat$y_i = match(dat$y, yLevelsName)
     datSeries = list(toList2(dat))
     names(datSeries) = 'data'
-  } else if(type == 'mapHeatmap'){
+  } else if(type %in% c('mapHeatmap', 'mapScatter')){
     datSeries = list(toList2(dat))
     names(datSeries) = 'data'
   }
@@ -356,8 +362,9 @@ coord_rotate = function(p){
         series[[k]]$data = dataList@xLevelsName
         series[[k]]$links = dataSeries[[i]][[j]]
         series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
-      } else if(type %in% c('heatmap', 'mapHeatmap')){
+      } else if(type %in% c('heatmap', 'mapHeatmap', 'mapScatter')){
         series[[k]]$data = dataSeries[[i]][[j]]
+        series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
       }
       
       if(stack) series[[k]]$stack = dataList@facetsName[i]
@@ -373,117 +380,118 @@ coord_rotate = function(p){
 
 
 
-.setBmap = function(center, zoom){
+.setBmap = function(center, zoom, mapStyle = 'normal'){
   
-  
-  styleJson = list(
-    list(
-      'featureType' = 'water',
-      'elementType' = 'all',
-      'stylers' = list(
-        'color' = '#d1d1d1'
-      )
-    ), list(
-      'featureType' = 'land',
-      'elementType' = 'all',
-      'stylers' = list(
-        'color' = '#f3f3f3'
-      )
-    ), list(
-      'featureType' = 'railway',
-      'elementType' = 'all',
-      'stylers' = list(
-        'visibility' = 'off'
-      )
-    ), list(
-      'featureType' = 'highway',
-      'elementType' = 'all',
-      'stylers' = list(
-        'color' = '#fdfdfd'
-      )
-    ), list(
-      'featureType' = 'highway',
-      'elementType' = 'labels',
-      'stylers' = list(
-        'visibility' = 'off'
-      )
-    ), list(
-      'featureType' = 'arterial',
-      'elementType' = 'geometry',
-      'stylers' = list(
-        'color' = '#fefefe'
-      )
-    ), list(
-      'featureType' = 'arterial',
-      'elementType' = 'geometry.fill',
-      'stylers' = list(
-        'color' = '#fefefe'
-      )
-    ), list(
-      'featureType' = 'poi',
-      'elementType' = 'all',
-      'stylers' = list(
-        'visibility' = 'on'
-      )
-    ), list(
-      'featureType' = 'green',
-      'elementType' = 'all',
-      'stylers' = list(
-        'visibility' = 'off'
-      )
-    ), list(
-      'featureType' = 'subway',
-      'elementType' = 'all',
-      'stylers' = list(
-        'visibility' = 'off'
-      )
-    ), list(
-      'featureType' = 'manmade',
-      'elementType' = 'all',
-      'stylers' = list(
-        'color' = '#d1d1d1'
-      )
-    ), list(
-      'featureType' = 'local',
-      'elementType' = 'all',
-      'stylers' = list(
-        'color' = '#d1d1d1'
-      )
-    ), list(
-      'featureType' = 'arterial',
-      'elementType' = 'labels',
-      'stylers' = list(
-        'visibility' = 'off'
-      )
-    ), list(
-      'featureType' = 'boundary',
-      'elementType' = 'all',
-      'stylers' = list(
-        'color' = '#fefefe'
-      )
-    ), list(
-      'featureType' = 'building',
-      'elementType' = 'all',
-      'stylers' = list(
-        'color' = '#d1d1d1'
-      )
-    ), list(
-      'featureType' = 'label',
-      'elementType' = 'labels.text.fill',
-      'stylers' = list(
-        'color' = '#999999'
-      )
-    )
-  )
-  
+  # mapStyle see
+  # 'normal', 'light', 'dark', 'redalert', 'googlelite', 'grassgreen', 'midnight', 'pink', 'darkgreen', 'bluish', 'grayscale', 'hardedge'
+  # http://developer.baidu.com/map/custom/list.htm
   
   mList = list(center = center,
                zoom = zoom,
                roam = T,
-               mapStyle = list(styleJson = styleJson)
+               mapStyle = list(style = mapStyle)
   )
   mList
 }
 
 
+#   styleJson = list(
+#     list(
+#       'featureType' = 'water',
+#       'elementType' = 'all',
+#       'stylers' = list(
+#         'color' = '#d1d1d1'
+#       )
+#     ), list(
+#       'featureType' = 'land',
+#       'elementType' = 'all',
+#       'stylers' = list(
+#         'color' = '#f3f3f3'
+#       )
+#     ), list(
+#       'featureType' = 'railway',
+#       'elementType' = 'all',
+#       'stylers' = list(
+#         'visibility' = 'off'
+#       )
+#     ), list(
+#       'featureType' = 'highway',
+#       'elementType' = 'all',
+#       'stylers' = list(
+#         'color' = '#fdfdfd'
+#       )
+#     ), list(
+#       'featureType' = 'highway',
+#       'elementType' = 'labels',
+#       'stylers' = list(
+#         'visibility' = 'off'
+#       )
+#     ), list(
+#       'featureType' = 'arterial',
+#       'elementType' = 'geometry',
+#       'stylers' = list(
+#         'color' = '#fefefe'
+#       )
+#     ), list(
+#       'featureType' = 'arterial',
+#       'elementType' = 'geometry.fill',
+#       'stylers' = list(
+#         'color' = '#fefefe'
+#       )
+#     ), list(
+#       'featureType' = 'poi',
+#       'elementType' = 'all',
+#       'stylers' = list(
+#         'visibility' = 'on'
+#       )
+#     ), list(
+#       'featureType' = 'green',
+#       'elementType' = 'all',
+#       'stylers' = list(
+#         'visibility' = 'off'
+#       )
+#     ), list(
+#       'featureType' = 'subway',
+#       'elementType' = 'all',
+#       'stylers' = list(
+#         'visibility' = 'off'
+#       )
+#     ), list(
+#       'featureType' = 'manmade',
+#       'elementType' = 'all',
+#       'stylers' = list(
+#         'color' = '#d1d1d1'
+#       )
+#     ), list(
+#       'featureType' = 'local',
+#       'elementType' = 'all',
+#       'stylers' = list(
+#         'color' = '#d1d1d1'
+#       )
+#     ), list(
+#       'featureType' = 'arterial',
+#       'elementType' = 'labels',
+#       'stylers' = list(
+#         'visibility' = 'off'
+#       )
+#     ), list(
+#       'featureType' = 'boundary',
+#       'elementType' = 'all',
+#       'stylers' = list(
+#         'color' = '#fefefe'
+#       )
+#     ), list(
+#       'featureType' = 'building',
+#       'elementType' = 'all',
+#       'stylers' = list(
+#         'color' = '#d1d1d1'
+#       )
+#     ), list(
+#       'featureType' = 'label',
+#       'elementType' = 'labels.text.fill',
+#       'stylers' = list(
+#         'color' = '#999999'
+#       )
+#     )
+#   )
 
