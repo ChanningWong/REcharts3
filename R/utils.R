@@ -190,11 +190,13 @@ renderREcharts3 <- function(expr, env = parent.frame(), quoted = FALSE){
   func <- shiny::exprToFunction(expr, env, quoted)
   function(){
     p = func()
-    id = p@id
-    if(p@plotOption$width > 0) width = p@plotOption$width else width = 600
-    if(p@plotOption$height > 0) height = p@plotOption$height else height = 350
-    dom = .makeDom(p, id = id, width = width, height = height)
-    htmltools::HTML(dom)
+    if(!is.null(p)){
+      id = p@id
+      if(p@plotOption$width > 0) width = p@plotOption$width else width = 600
+      if(p@plotOption$height > 0) height = p@plotOption$height else height = 350
+      dom = .makeDom(p, id = id, width = width, height = height)
+      htmltools::HTML(dom)
+    } else NULL
   }
 }
 
@@ -207,7 +209,11 @@ RECharts3Output = function (outputId, inline = FALSE, container = if(inline) spa
   ))
   div(id = outputId, class = 'shiny-html-output',
       tagList(
-        singleton(tags$head(tags$script(src = 'js/echarts.min.js', type = "text/javascript")))
+        singleton(tags$head(
+          tags$script(src = 'js/echarts.min.js', type = "text/javascript"),
+          tags$script(src = 'js/bmap.min.js', type = "text/javascript"),
+          tags$script(src = 'http://api.map.baidu.com/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM', type = "text/javascript")
+          ))
       )
   )
 }
