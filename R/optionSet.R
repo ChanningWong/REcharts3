@@ -296,7 +296,7 @@ coord_rotate = function(p){
     datSeries = list(toList2(dat))
     names(datSeries) = 'data'
   }
-    
+  
   datSeries
 }
 
@@ -328,7 +328,7 @@ coord_rotate = function(p){
     normalList = list(show = F)
   }
   
-  if(type %in% c('bar', 'his', 'line', 'scatter', 'graph')){
+  if(type %in% c('bar', 'his', 'line', 'lines', 'scatter', 'graph')){
     len = length(dataList@seriesName)
   } else if(type == 'pie'){
     len = length(dataList@xLevelsName)
@@ -350,13 +350,19 @@ coord_rotate = function(p){
       
       if(type %in% c('bar', 'his', 'line', 'lines', 'scatter')){
         series[[k]]$data = dataSeries[[i]][[j]]
-        series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
+        if(type %in% c('line', 'lines')){
+          series[[k]]$lineStyle = list(normal = list(color = plotColor[j], opacity = opacity))
+          print(j)
+          print(plotColor)
+        } else {
+          series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
+        }
+        
         series[[k]]$symbolSize = ifelse('size' %in% dataList@var, 'formatFunction_symbolSize', symbolSize) 
       } else if(type == 'pie'){
         series[[k]]$data = dataSeries[[i]][[j]]
         series[[k]]$data = mapply(function(x, y){
           x$itemStyle = list(normal = list(color = y, opacity = opacity))
-          x
         }, series[[k]]$data, as.list(plotColor), SIMPLIFY = F, USE.NAMES = F)
       } else if(type == 'graph'){
         series[[k]]$data = dataList@xLevelsName

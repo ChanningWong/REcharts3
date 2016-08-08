@@ -304,7 +304,7 @@ graph = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
 
 mapLines = function(dat, x, y, z = NULL, label = NULL, 
                     center = NULL, zoom = 14, mapStyle = 'normal', 
-                    line.width = 0.1,
+                    line.width = 3,
                     label.show = F, legend.left = 'center', ...){
   
   expr = match.call()
