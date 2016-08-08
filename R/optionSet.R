@@ -352,8 +352,6 @@ coord_rotate = function(p){
         series[[k]]$data = dataSeries[[i]][[j]]
         if(type %in% c('line', 'lines')){
           series[[k]]$lineStyle = list(normal = list(color = plotColor[j], opacity = opacity))
-          print(j)
-          print(plotColor)
         } else {
           series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
         }
