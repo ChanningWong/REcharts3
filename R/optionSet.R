@@ -358,10 +358,10 @@ coord_rotate = function(p){
         
         series[[k]]$symbolSize = ifelse('size' %in% dataList@var, 'formatFunction_symbolSize', symbolSize) 
       } else if(type == 'pie'){
-        series[[k]]$data = dataSeries[[i]][[j]]
         series[[k]]$data = mapply(function(x, y){
           x$itemStyle = list(normal = list(color = y, opacity = opacity))
-        }, series[[k]]$data, as.list(plotColor), SIMPLIFY = F, USE.NAMES = F)
+          x
+        }, dataSeries[[i]][[j]], as.list(plotColor), SIMPLIFY = F, USE.NAMES = F)
       } else if(type == 'graph'){
         series[[k]]$data = dataList@xLevelsName
         series[[k]]$links = dataSeries[[i]][[j]]
