@@ -11,11 +11,14 @@
 # legend.right = NULL; legend.bottom = NULL; legend.width = NULL; legend.height = NULL;
 # grid.left = NULL; grid.top = NULL; grid.right = NULL; grid.bottom = NULL; grid.margin.x = 5; grid.margin.y = 5; 
 # yAxis.max = NULL;
-# xAxis.inverse = F; axisLabel.interval.x = NULL; axisLabel.interval.y = NULL;
+# xAxis.inverse = F; xAxis.axisLabel.interval = NULL; yAxis.axisLabel.interval = NULL;
 # toolbox.show = F; dataZoom.show = T; dataView.show = T; dataView.readOnly = T; restore.show = T; saveAsImage.show = T;
 # width = NULL; height = NULL;
 # chart.radius = '70%'; chart.position = c('50%', '55%')
 # draggable = T;repulsion = 200;gravity = 0.1;edgeLength = 50;layoutAnimation = F;focusNodeAdjacency = F
+# xAxis.name = NULL; xAxis.nameRotate = NULL, xAxis.nameLocation = 'middle'; xAxis.nameGap = 30;
+# yAxis.name = NULL; yAxis.nameRotate = NULL, yAxis.nameLocation = 'middle'; yAxis.nameGap = 30;
+
 
 setLayer = function(dataList, type = 'bar', 
                     ..., 
@@ -29,8 +32,11 @@ setLayer = function(dataList, type = 'bar',
                     legend.right = NULL, legend.bottom = NULL, legend.width = NULL, legend.height = NULL,
                     grid.left = NULL, grid.top = NULL, grid.right = NULL, grid.bottom = NULL, grid.margin.x = 5, grid.margin.y = 5, 
                     xAxis.min = NULL, xAxis.max = NULL, xAxis.inverse = F,
+                    xAxis.name = NULL, xAxis.nameRotate = NULL, xAxis.nameLocation = 'middle', xAxis.nameGap = 30,
+                    xAxis.axisLabel.interval = NULL,
                     yAxis.min = NULL, yAxis.max = NULL, yAxis.inverse = F,
-                    axisLabel.interval.x = NULL, axisLabel.interval.y = NULL,
+                    yAxis.name = NULL, yAxis.nameRotate = NULL, yAxis.nameLocation = 'middle', yAxis.nameGap = 30,
+                    yAxis.axisLabel.interval = NULL,
                     toolbox.show = F, dataZoom.show = T, dataView.show = T, dataView.readOnly = T, restore.show = T, saveAsImage.show = T,
                     width = NULL, height = NULL){
   
@@ -102,13 +108,21 @@ setLayer = function(dataList, type = 'bar',
     for(i in 1:length(dataList@ facetsName)){
       if(i < 1) next
       optionList$xAxis[[i]] = list(gridIndex = i - 1, 
-                                   min =xAxis.min, max = xAxis.max, inverse = xAxis.inverse,
-                                   axisLabel = list(interval = axisLabel.interval.x),
+                                   name = xAxis.name,
+                                   nameRotate = xAxis.nameRotate,
+                                   nameLocation = xAxis.nameLocation,
+                                   nameGap = xAxis.nameGap,
+                                   min = xAxis.min, max = xAxis.max, inverse = xAxis.inverse,
+                                   axisLabel = list(interval = xAxis.axisLabel.interval),
                                    inverse = xAxis.inverse)
       if(type %in% c('line', 'bar', 'his', 'heatmap')) optionList$xAxis[[i]]$data = dataList@xLevelsName
       optionList$yAxis[[i]] = list(gridIndex = i - 1, 
+                                   name = yAxis.name,
+                                   nameRotate = yAxis.nameRotate,
+                                   nameLocation = yAxis.nameLocation,
+                                   nameGap = yAxis.nameGap,
                                    min = yAxis.min, max = yAxis.max, inverse = yAxis.inverse,
-                                   axisLabel = list(interval = axisLabel.interval.y))
+                                   axisLabel = list(interval = yAxis.axisLabel.interval))
       if(type %in% c('heatmap')) optionList$yAxis[[i]]$data = dataList@yLevelsName
     }
     names(optionList$xAxis) = NULL
@@ -211,7 +225,10 @@ line = function(dat, x, y, z = NULL, facets = NULL, label = NULL,
 
 
 scatter = function(dat, x, y, z = NULL, facets = NULL, label = NULL, size = NULL,
-                   label.show = F, legend.left = 'center', opacity = 0.7, ...){
+                   label.show = F, legend.left = 'center', opacity = 0.7,
+                   xAxis.name = as.character(substitute(x)),
+                   yAxis.name = as.character(substitute(x)),
+                   ...){
   
   expr = match.call()
   expr[[1]] = as.name('.dataParse')
@@ -223,7 +240,8 @@ scatter = function(dat, x, y, z = NULL, facets = NULL, label = NULL, size = NULL
   if(!is.null(expr$label) & is.null(expr$label)) label.show = T
   p = setLayer(dataList, type = 'scatter', 
                label.show = label.show, legend.left = legend.left, 
-               opacity = opacity, ...)
+               opacity = opacity, xAxis.name = xAxis.name, yAxis.name = yAxis.name,
+               ...)
   p
 }
 

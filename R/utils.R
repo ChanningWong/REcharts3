@@ -25,6 +25,14 @@ rmNULL <- function(x) {
 
 
 
+verticalTitle = function(x){
+  y = regmatches(x, gregexpr('[0-9a-zA-Z]+|[^0-9a-zA-Z]', x))[[1]]
+  paste(y, collapse = '\n')
+}
+# verticalTitle('测__试abc测试，12ab测试')
+
+
+
 .rev = function(x) x[length(x):1]
 
 
@@ -185,7 +193,7 @@ plotMultipleREcharts3 = function(
 
 
 
-renderREcharts3 <- function(expr, env = parent.frame(), quoted = FALSE){
+renderREcharts3 = function(expr, env = parent.frame(), quoted = FALSE){
   
   func <- shiny::exprToFunction(expr, env, quoted)
   function(){
