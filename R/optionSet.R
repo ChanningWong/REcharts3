@@ -125,33 +125,39 @@ coord_rotate = function(p){
 
 
 .dataParse = function(dat, x, y, z = NULL, facets = NULL, label = NULL, 
-                      size = NULL,
-                      type = 'bar', ...){
+                      size = NULL, type = 'bar', parse = T, ...){
   
   parList = as.list(match.call()[-1])
-  if(is.character(parList$x)) parList$x = as.name(parList$x)
-  if(is.character(parList$y)) parList$y = as.name(parList$y)
-  if(is.character(parList$z)) parList$z = as.name(parList$z)
-  if('label' %in% names(parList)) if(is.character(parList['label'][[1]])) parList['label'][[1]] = as.name(parList['label'][[1]])
   
-  
-  if(is.character(parList$facets)) parList$facets = as.name(parList$facets)
-  if(is.character(parList$size)) parList$size = as.name(parList$size)
-  
-  d = data.frame(x = eval(parList$x, dat), 
-                 y = eval(parList$y, dat), 
-                 stringsAsFactors = F)
-  
-  if(!is.null(parList$z)){ 
-    d$z = eval(parList$z, dat)
-  } else if(type %in% c('mapHeatmap', 'mapScatter')){
-    d$z = 1
+  if(parse){
+    
+    if(is.character(parList$x)) parList$x = as.name(parList$x)
+    if(is.character(parList$y)) parList$y = as.name(parList$y)
+    if(is.character(parList$z)) parList$z = as.name(parList$z)
+    if(is.character(parList$label)) parList$label = as.name(parList$label)
+    if(is.character(parList$facets)) parList$facets = as.name(parList$facets)
+    if(is.character(parList$size)) parList$size = as.name(parList$size)
+    
+    d = data.frame(x = eval(parList$x, dat), 
+                   y = eval(parList$y, dat), 
+                   stringsAsFactors = F)
+    if(!is.null(parList$z)) d$z = eval(parList$z, dat)
+    if(!is.null(parList$label)) d$label = eval(parList$label, dat)
+    if(!is.null(parList$facets)) d$facets = eval(parList$facets, dat)
+    if(!is.null(parList$size)) d$size = eval(parList$size, dat)
+    
+  } else {
+    
+    d = data.frame(x = dat[ ,x], y = dat[ ,y], stringsAsFactors = F)
+    if(!is.null(parList$z)) if(!is.null(z)) d$z = dat[ ,z]
+    if(!is.null(parList$label)) if(!is.null(label)) d$label = dat[ ,label]
+    if(!is.null(parList$facets)) if(!is.null(facets)) d$facets = dat[ ,facets]
+    if(!is.null(parList$size)) if(!is.null(size)) d$size = dat[ ,size]
+    
   }
   
-  if('label' %in% names(parList)) d$label = eval(parList['label'][[1]], dat)
   
-  if(!is.null(parList$facets)) d$facets = eval(parList$facets, dat)
-  if(!is.null(parList$size)) d$size = eval(parList$size, dat)
+  if(is.null(d$z) & type %in% c('mapHeatmap', 'mapScatter')) d$z = 1
   
   if(type == 'scatter'){
     if(is.null(d$label)) d$label = paste0(d$x, ' , ', d$y)

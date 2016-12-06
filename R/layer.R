@@ -92,7 +92,7 @@ setLayer = function(dataList, type = 'bar',
   if('facets' %in% dataList@var){
     g = attr(gridSet, 'grid')
     addTitle = mapply(function(ir, it, x){ # ir = i.grid[1 ,1]; it = i.grid[1 ,2]
-      o = list(left = ir, top = it, text = x, fontSize = facets.fontSize)
+      o = list(left = ir, top = it, text = x, textStyle = list(fontSize = facets.fontSize))
       o[1:2] = lapply(o[1:2], paste0, '%')
       o
     }, g[ ,1], g[ ,2] - facets.top, as.list(dataList@facetsName), SIMPLIFY = F, USE.NAMES = F)
