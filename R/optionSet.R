@@ -78,8 +78,18 @@
                            grid.margin.x = NULL, grid.margin.y = NULL,
                            containLabel = T){
   # ncol = ceiling(sqrt(n));grid.left = 7; grid.top = 8; grid.right = 5; grid.bottom = 6; grid.margin.x = 8; grid.margin.y = 9
-  if(is.null(ncol)) ncol = ceiling(sqrt(n))
-  if(is.null(nrow)) nrow = ceiling(n / ncol)
+  if(!is.null(ncol)) if(ncol > n) stop('ncol is larger than plot numbers')
+  if(!is.null(nrow)) if(nrow > n) stop('nrow is larger than plot numbers')
+  
+  if(!is.null(ncol)){
+    nrow = ceiling(n / ncol)
+  } else if(!is.null(nrow)){
+    ncol = ceiling(n / nrow)
+  } else {
+    ncol = ceiling(sqrt(n))
+    nrow = ceiling(n / ncol)
+  }
+  
   if(is.null(grid.left)) grid.left = 5
   if(is.null(grid.top)) grid.top = 5
   if(is.null(grid.right)) grid.right = 5
@@ -103,6 +113,37 @@
 }
 
 
+
+.pieCenterSet = function(n, ncol = NULL, nrow = NULL, 
+                         grid.left = 7, grid.top = 7, grid.right = 5, grid.bottom = 5,
+                         grid.margin.x = NULL, grid.margin.y = NULL){
+  # ncol = ceiling(sqrt(n));grid.left = 7; grid.top = 8; grid.right = 5; grid.bottom = 6; grid.margin.x = 8; grid.margin.y = 9
+  if(!is.null(ncol)) if(ncol > n) stop('ncol is larger than plot numbers')
+  if(!is.null(nrow)) if(nrow > n) stop('nrow is larger than plot numbers')
+  
+  if(!is.null(ncol)){
+    nrow = ceiling(n / ncol)
+  } else if(!is.null(nrow)){
+    ncol = ceiling(n / nrow)
+  } else {
+    ncol = ceiling(sqrt(n))
+    nrow = ceiling(n / ncol)
+  }
+  
+  if(is.null(grid.left)) grid.left = 5
+  if(is.null(grid.top)) grid.top = 5
+  if(is.null(grid.right)) grid.right = 5
+  if(is.null(grid.bottom)) grid.bottom = 5
+  margin.x = ifelse(ncol == 1, grid.margin.x, grid.margin.x / (ncol - 1))
+  margin.y = ifelse(nrow == 1, grid.margin.y, grid.margin.y / (nrow - 1))
+  
+  width = (100 - grid.left - grid.right - margin.x*(ncol - 1)) / ncol
+  height = (100 - grid.top - grid.bottom - margin.y* (nrow - 1)) / nrow
+  i.x = grid.left + (1:ncol - 1) * width + (1:ncol - 1) * margin.x
+  i.y = grid.top + (1:nrow - 1) * height + (1:nrow - 1) * margin.y
+  i.grid = merge(i.x + width/2, i.y + height/2)[1:n, , drop = F]
+  i.grid
+}
 
 
 
@@ -159,21 +200,25 @@ coord_rotate = function(p){
   
   if(is.null(d$z) & type %in% c('mapHeatmap', 'mapScatter')) d$z = 1
   
-  if(type == 'scatter'){
-    if(is.null(d$label)) d$label = paste0(d$x, ' , ', d$y)
-  } else if(type == 'heatmap'){
-    if(is.null(d$label)) d$label = paste0(d$x, ' , ', d$y, ' , ', d$z)
-  } else {
-    if(is.null(d$label)) d$label = d$y
-  }
   d
 }
 
 
 .dataList = function(dat, type = 'bar'){
   
+  
   d = new("REcharts3Data")
+  
   d@var = names(dat)
+  
+  if(type == 'scatter'){
+    if(is.null(dat$label)) dat$label = paste0(dat$x, ' , ', dat$y)
+  } else if(type == 'heatmap'){
+    if(is.null(dat$label)) dat$label = paste0(dat$x, ' , ', dat$y, ' , ', dat$z)
+  } else {
+    if(is.null(dat$label)) dat$label = dat$y
+  }
+  
   d@type = type
   if(type %in% c('his', 'bar', 'line', 'lines', 'pie', 'heatmap')){ 
     d@xLevelsName = .pickLevels(dat$x)
@@ -191,10 +236,10 @@ coord_rotate = function(p){
   }
   if(!is.null(dat$facets)) d@facetsName = .pickLevels(dat$facets)
   
-  if(type == 'graph'){
-    dat$x = match(dat$x, d@xLevelsName) - 1
-    dat$y = match(dat$y, d@xLevelsName) - 1
-  }
+#   if(type == 'graph'){
+#     dat$x = match(dat$x, d@xLevelsName) - 1
+#     dat$y = match(dat$y, d@xLevelsName) - 1
+#   }
   
   if(is.null(dat$facets)){
     dataList = list(dat)
@@ -270,7 +315,7 @@ coord_rotate = function(p){
     toList = toList.mapScatter
   }
   
-  if(type %in% c('bar', 'his', 'line')){
+  if(type %in% c('bar', 'his', 'line', 'pie')){
     toList2 = function(d){
       y = toList(d)[match(xLevelsName, d$x)]
       y[sapply(y, is.null)] = NA
@@ -312,7 +357,14 @@ coord_rotate = function(p){
 # type = 'heatmap'; label.show = T; label.position = 'top'; stack = F;color = .plotColor
 .setSeries = function(dataList, type = 'bar', stack = F, 
                       color = .plotColor, opacity = 0.7, symbolSize = 10,
-                      label.show = T, label.position = 'top', ...){
+                      label.show = F, 
+                      label.position = 'top', 
+                      label.fontColor = NULL, 
+                      label.fontStyle = 'normal',
+                      label.fontWeight = 'normal',
+                      label.fontFamily = 'sans-serif',
+                      label.fontSize = 12,
+                      ...){
   
   dataSeries = lapply(dataList@data, function(s){ # s = dataList@data[[1]]
     y = .setDataSeries(s, type = type, xLevelsName = dataList@xLevelsName, yLevelsName = dataList@yLevelsName)
@@ -329,6 +381,11 @@ coord_rotate = function(p){
   if(label.show){
     normalList = list(show = label.show,
                       position = label.position[1],
+                      textStyle = list(color = label.fontColor,
+                                       fontStyle = label.fontStyle,
+                                       fontWeight = label.fontWeight,
+                                       fontFamily = label.fontFamily,
+                                       fontSize = label.fontSize),
                       formatter = 'formatFunction_label')
   } else {
     normalList = list(show = F)
@@ -356,22 +413,23 @@ coord_rotate = function(p){
       
       if(type %in% c('bar', 'his', 'line', 'lines', 'scatter')){
         series[[k]]$data = dataSeries[[i]][[j]]
+        series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
         if(type %in% c('line', 'lines')){
           series[[k]]$lineStyle = list(normal = list(color = plotColor[j], opacity = opacity))
-        } else {
-          series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
         }
-        
         series[[k]]$symbolSize = ifelse('size' %in% dataList@var, 'formatFunction_symbolSize', symbolSize) 
       } else if(type == 'pie'){
         series[[k]]$data = mapply(function(x, y){
-          x$itemStyle = list(normal = list(color = y, opacity = opacity))
-          x
+          if(all(!is.na(x))){
+            x$itemStyle = list(normal = list(color = y, opacity = opacity))
+            x
+          } else list()
         }, dataSeries[[i]][[j]], as.list(plotColor), SIMPLIFY = F, USE.NAMES = F)
       } else if(type == 'graph'){
-        series[[k]]$data = dataList@xLevelsName
+        # series[[k]]$data = dataList@xLevelsName
         series[[k]]$links = dataSeries[[i]][[j]]
-        series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
+        series[[k]]$symbolSize = ifelse('size' %in% dataList@var, 'formatFunction_symbolSize', symbolSize) 
+        # series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))
       } else if(type %in% c('heatmap', 'mapHeatmap', 'mapScatter')){
         series[[k]]$data = dataSeries[[i]][[j]]
         series[[k]]$itemStyle = list(normal = list(color = plotColor[j], opacity = opacity))

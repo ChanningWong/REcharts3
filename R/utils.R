@@ -1,4 +1,11 @@
 
+.plotColor = c('#3366CC', '#FF9900', '#109618', '#DC3912', '#990099',
+               '#0099C6', '#DD4477', '#66AA00', '#B82E2E', '#316395',
+               '#994499', '#22AA99', '#AAAA11', '#6633CC', # '#E67300',
+               '#8B0707', '')
+
+
+
 .round2 <- function(x, n = 1, numeric = T) {
   posneg <- sign(x)
   z <- abs(x)*10^n
@@ -33,11 +40,16 @@ verticalTitle = function(x){
 
 
 
+.fillNA = function(dat, fillcol, na.value = '(NA)'){
+  for(i in intersect(names(dat), fillcol)){
+    if(anyNA(dat[ ,i])) dat[is.na(dat[ ,i]) ,i] = na.value
+  }
+  dat
+}
+
+
+
 .rev = function(x) x[length(x):1]
-
-
-
-.plotColor = c('#c23531','#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83',  '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3')
 
 
 
@@ -225,7 +237,7 @@ RECharts3Output = function (outputId, inline = FALSE, container = if(inline) spa
       )
   )
 }
-
+REcharts3Output = RECharts3Output
 
 
 incluedRECharts3 = function(local = F){
