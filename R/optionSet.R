@@ -165,7 +165,7 @@ coord_rotate = function(p){
 
 
 
-.dataParse = function(dat, x, y, z = NULL, facets = NULL, label = NULL, 
+.dataParse = function(dat, x, y, z = NULL, facets = NULL, label = NULL, tooltip = NULL, 
                       size = NULL, type = 'bar', parse = T, ...){
   
   parList = as.list(match.call()[-1])
@@ -176,6 +176,7 @@ coord_rotate = function(p){
     if(is.character(parList$y)) parList$y = as.name(parList$y)
     if(is.character(parList$z)) parList$z = as.name(parList$z)
     if(is.character(parList$label)) parList$label = as.name(parList$label)
+    if(is.character(parList$tooltip)) parList$tooltip = as.name(parList$tooltip)
     if(is.character(parList$facets)) parList$facets = as.name(parList$facets)
     if(is.character(parList$size)) parList$size = as.name(parList$size)
     
@@ -184,6 +185,7 @@ coord_rotate = function(p){
                    stringsAsFactors = F)
     if(!is.null(parList$z)) d$z = eval(parList$z, dat)
     if(!is.null(parList$label)) d$label = eval(parList$label, dat)
+    if(!is.null(parList$tooltip)) d$tooltip = eval(parList$tooltip, dat)
     if(!is.null(parList$facets)) d$facets = eval(parList$facets, dat)
     if(!is.null(parList$size)) d$size = eval(parList$size, dat)
     
@@ -192,6 +194,7 @@ coord_rotate = function(p){
     d = data.frame(x = dat[ ,x], y = dat[ ,y], stringsAsFactors = F)
     if(!is.null(parList$z)) if(!is.null(z)) d$z = dat[ ,z]
     if(!is.null(parList$label)) if(!is.null(label)) d$label = dat[ ,label]
+    if(!is.null(parList$tooltip)) if(!is.null(tooltip)) d$tooltip = dat[ ,tooltip]
     if(!is.null(parList$facets)) if(!is.null(facets)) d$facets = dat[ ,facets]
     if(!is.null(parList$size)) if(!is.null(size)) d$size = dat[ ,size]
     
@@ -294,7 +297,21 @@ coord_rotate = function(p){
   )
   
   toList.graph = function(d){
-    mapply(function(x, y) list(`source` = x, target = y), d$x, d$y, SIMPLIFY = F, USE.NAMES = F)
+    if(is.null(d$label)){
+      if(is.null(d$tooltip)){
+        mapply(function(x, y) list(`source` = x, target = y), d$x, d$y, SIMPLIFY = F, USE.NAMES = F)
+      } else {
+        mapply(function(x, y, u) list(`source` = x, target = y, tooltip = u), d$x, d$y, d$tooltip, SIMPLIFY = F, USE.NAMES = F)
+      }
+    } else {
+      if(is.null(d$tooltip)){
+        mapply(function(x, y, z) list(`source` = x, target = y, label = list(normal = list(formatter = z))),
+               d$x, d$y, d$label, SIMPLIFY = F, USE.NAMES = F)
+      } else {
+        mapply(function(x, y, z, u) list(`source` = x, target = y, label = list(normal = list(formatter = z)), tooltip = u),
+               d$x, d$y, d$label, d$tooltip, SIMPLIFY = F, USE.NAMES = F)
+      }
+    }
   }
   
   if(type %in% c('bar', 'his', 'line')){

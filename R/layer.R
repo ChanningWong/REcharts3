@@ -32,6 +32,8 @@ setLayer = function(dataList, type = 'bar',
                     label.fontSize = 12,
                     
                     tooltip.show = T, 
+                    tooltip = NULL,
+                    
                     title = NULL, title.fontSize = 18, title.top = 0, title.left = 'left',
                     subTitle = NULL, subTitle.fontSize = 14, subTitle.color = '#888',
                     legend = NULL, legend.show = T, legend.orient = c('horizontal', 'vertical'),legend.left = 'center', legend.top = '5.5%', 
@@ -277,8 +279,8 @@ setLayer = function(dataList, type = 'bar',
     p@formatFunction_tooltip = 'function(params){return params.seriesName + \' : \' + params.data.label}'
     p@formatFunction_symbolSize = 'function (data){ return data[2]; }'
   } else if(type %in% c('graph')){
-    p@formatFunction_label = 'function(params){return params.data.label}'
-    # p@formatFunction_tooltip = 'function(params){return params.data.name + \' : \' + params.data.label}'
+    p@formatFunction_label = 'function(params){return params.data.name}'
+    # p@formatFunction_tooltip = 'function(params){return params.data.tooltip}'
   }
   
   p
@@ -450,9 +452,10 @@ donut = function(dat, x, y, facets = NULL, label = NULL,
 
 
 graph = function(dat, x, y, z = NULL, facets = NULL, label = NULL, category = NULL,
-                 layout = 'force', color = .plotColor,
-                 draggable = T, symbol = 'circle', symbolSize = 10, 
-                 repulsion = 50, gravity = 0.1, edgeLength = 30, 
+                 tooltip = NULL, tooltip.show = T,
+                 layout = 'force', color = .plotColor, 
+                 draggable = T, symbol = 'circle', symbolSize = 10, edgeSymbol = NULL,
+                 repulsion = 50, gravity = 0.1, edgeLength = 30, curveness = 0,
                  layoutAnimation = T,
                  focusNodeAdjacency = F,
                  ...){
@@ -466,30 +469,39 @@ graph = function(dat, x, y, z = NULL, facets = NULL, label = NULL, category = NU
   if(is.null(category)){
     idx = unique(c(.pickLevels(dat$x), .pickLevels(dat$y)))
   } else {
-    idx = .pickLevels(category$name)
-    idx2 = match(category$category[match(category$name, idx)], .pickLevels(category$category))  - 1
+    idx = .pickLevels(category$id)
+    idx_category = match(category$category[match(category$id, idx)], .pickLevels(category$category))  - 1
+    if(!is.null(category$label)) nodeLabel = category$label[match(category$id, idx)] else nodeLabel = idx
+    if(!is.null(category$tooltip)) nodeTooltip = category$tooltip[match(category$id, idx)]
+    if(!is.null(category$symbol)) nodeSymbol = category$symbol[match(category$id, idx)] else nodeSymbol = rep('circle', length(idx))
   }
   dat$x = match(dat$x, idx) - 1
   dat$y = match(dat$y, idx) - 1
   
   dataList = .dataList(dat, type = 'graph')
-  p = setLayer(dataList, type = 'graph', layout = layout, 
-               symbol = symbol, symbolSize = symbolSize, 
+  p = setLayer(dataList, type = 'graph', layout = layout, tooltip.show = tooltip.show,
+               symbol = symbol, symbolSize = symbolSize, edgeSymbol = edgeSymbol,
                draggable = draggable, focusNodeAdjacency = focusNodeAdjacency,
                force = list(repulsion = repulsion, gravity = gravity, 
                             edgeLength = edgeLength, layoutAnimation = layoutAnimation), 
                ...)
   
+  p@option$series[[1]]$links = lapply(p@option$series[[1]]$links, function(x){ # x = p@option$series[[1]]$links[[1]]
+    x$label$normal$show = tooltip.show
+    x$lineStyle = list(normal = list(curveness = curveness))
+    x
+  })
+  
   if(is.null(category)){
     p@option$series[[1]]$data = lapply(idx, function(x) list(name = x))
     p@option$legend$data = NULL
   } else {
-    if(is.null(category$label)){
-      p@option$series[[1]]$data = mapply(function(x, y, z) list(name = x, category = y, label = '') , 
-                                         idx, idx2, SIMPLIFY = F, USE.NAMES = F)
+    if(is.null(category$tooltip)){
+      p@option$series[[1]]$data = mapply(function(x, y) list(name = x, category = y, tooltip = x, symbol = u) , 
+                                         nodeLabel, idx_category, nodeSymbol, SIMPLIFY = F, USE.NAMES = F)
     } else {
-      p@option$series[[1]]$data = mapply(function(x, y, z) list(name = x, category = y, label = z) , 
-                                         idx, idx2, category$label, SIMPLIFY = F, USE.NAMES = F)
+      p@option$series[[1]]$data = mapply(function(x, y, z, u) list(name = x, category = y, tooltip = z, symbol = u) , 
+                                         nodeLabel, idx_category, nodeTooltip, nodeSymbol, SIMPLIFY = F, USE.NAMES = F)
     }
     p@option$series[[1]]$categories = mapply(function(x, y){ 
       list(name = x, itemStyle = list(normal = list(color = y)))
@@ -499,8 +511,8 @@ graph = function(dat, x, y, z = NULL, facets = NULL, label = NULL, category = NU
     SIMPLIFY = F, USE.NAMES = F)
     p@option$legend$data = .pickLevels(category$category)
   }
-  p@option$tooltip$formatter = NULL
   p@option$series[[1]]$itemStyle = NULL
+  p@option$tooltip$formatter = NULL
   p
   
 }
