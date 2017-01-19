@@ -7,9 +7,9 @@ Depends:
     magrittr
 Imports:
     RJSONIO,
-    shiny(>= 0.9.1),
-    htmltools (>= 0.3.5),
-    htmlwidgets (>= 0.6)
+    shiny,
+    htmltools,
+    htmlwidgets
 Maintainer: Channing Wong <channingfov@gmail.com>
 Description: A R Interface to ECharts
 Collate:
