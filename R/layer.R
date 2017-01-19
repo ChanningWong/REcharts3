@@ -40,7 +40,7 @@ setLayer = function(dataList, type = 'bar',
                     legend.right = NULL, legend.bottom = NULL, legend.width = NULL, legend.height = NULL,
                     grid.left = NULL, grid.top = NULL, grid.right = NULL, grid.bottom = NULL, grid.margin.x = 5, grid.margin.y = 5, 
                     
-                    xAxis.min = NULL, xAxis.max = NULL, xAxis.inverse = F,
+                    xAxis.min = NULL, xAxis.max = NULL, xAxis.inverse = F, xAxis.interval = NULL,
                     xAxis.name = NULL, xAxis.nameRotate = NULL, xAxis.nameLocation = 'middle', xAxis.nameGap = 30,
                     
                     xAxis.axisLine.show = T, 
@@ -66,7 +66,7 @@ setLayer = function(dataList, type = 'bar',
                     xAxis.splitLine.interval = 'auto',
                     xAxis.splitLine.lineStyle = list(color = '#EEE9E9', width =  1, type = 'solid', shadowBlur = NULL, shadowColor = NULL, shadowOffsetX = 0, shadowOffsetY = 0, opacity = NULL),
                     
-                    yAxis.min = NULL, yAxis.max = NULL, yAxis.inverse = F,
+                    yAxis.min = NULL, yAxis.max = NULL, yAxis.inverse = F, yAxis.interval = NULL,
                     yAxis.name = NULL, yAxis.nameRotate = NULL, yAxis.nameLocation = 'middle', yAxis.nameGap = 30,
                     
                     
@@ -192,6 +192,7 @@ setLayer = function(dataList, type = 'bar',
                                    nameGap = xAxis.nameGap,
                                    min = xAxis.min, 
                                    max = xAxis.max, 
+                                   interval = xAxis.interval,
                                    inverse = xAxis.inverse,
                                    axisLine = list(show = xAxis.axisLine.show, 
                                                    onZero = xAxis.axisLine.onZero, 
@@ -220,6 +221,7 @@ setLayer = function(dataList, type = 'bar',
                                    nameGap = yAxis.nameGap,
                                    min = yAxis.min,
                                    max = yAxis.max, 
+                                   interval = yAxis.interval,
                                    inverse = yAxis.inverse,
                                    axisLine = list(show = yAxis.axisLine.show, 
                                                    onZero = yAxis.axisLine.onZero, 
@@ -279,7 +281,7 @@ setLayer = function(dataList, type = 'bar',
     p@formatFunction_tooltip = 'function(params){return params.seriesName + \' : \' + params.data.label}'
     p@formatFunction_symbolSize = 'function (data){ return data[2]; }'
   } else if(type %in% c('graph')){
-    p@formatFunction_label = 'function(params){return params.data.name}'
+    p@formatFunction_label = 'function(params){return params.data.label}'
     # p@formatFunction_tooltip = 'function(params){return params.data.tooltip}'
   }
   
@@ -493,14 +495,14 @@ graph = function(dat, x, y, z = NULL, facets = NULL, label = NULL, category = NU
   })
   
   if(is.null(category)){
-    p@option$series[[1]]$data = lapply(idx, function(x) list(name = x))
+    p@option$series[[1]]$data = lapply(idx, function(x) list(label = x))
     p@option$legend$data = NULL
   } else {
     if(is.null(category$tooltip)){
-      p@option$series[[1]]$data = mapply(function(x, y) list(name = x, category = y, tooltip = x, symbol = u) , 
+      p@option$series[[1]]$data = mapply(function(x, y) list(label = x, category = y, tooltip = x, symbol = u) , 
                                          nodeLabel, idx_category, nodeSymbol, SIMPLIFY = F, USE.NAMES = F)
     } else {
-      p@option$series[[1]]$data = mapply(function(x, y, z, u) list(name = x, category = y, tooltip = z, symbol = u) , 
+      p@option$series[[1]]$data = mapply(function(x, y, z, u) list(label = x, category = y, tooltip = z, symbol = u) , 
                                          nodeLabel, idx_category, nodeTooltip, nodeSymbol, SIMPLIFY = F, USE.NAMES = F)
     }
     p@option$series[[1]]$categories = mapply(function(x, y){ 
